@@ -8,7 +8,7 @@ using namespace std;
 /**
 check if the start of the string is a number.
 if yes, append string. move counter.
-
+account for overlapping letters
 */
 
 unordered_map<string,string> digit_map = {
@@ -23,9 +23,10 @@ unordered_map<string,string> digit_map = {
     {"nine", "9"}
 };
 
-string find_first_digit(string line) {
+string convert_line(string line) {
     string res;
     for (int i = 0; i < line.length(); i++) {
+        bool found_match = false;
         for (auto &kv : digit_map) {
             bool is_match = true;
             for (int j = 0; j < kv.first.length(); j++) {
@@ -35,36 +36,16 @@ string find_first_digit(string line) {
                 }
             }
             if (is_match) {
-                return kv.second;
+                res.append(kv.second);
+                // hack here: instead of completely skipping the letter
+                // start at the second last letter to account for overlapping/shared letters.
+                i += kv.first.length() - 2;
+                found_match = true;
+                break;
             }
         }
-        if (isdigit(line[i])) {
-            res = line[i];
-            return res;
-        }
-    }
-    return res;
-}
-
-// TODO: figure out how to find the first digit from the back.
-string find_last_digit(string line) {
-    string res;
-    for (int i = line.length() - 1; i >= 0; i--) {
-        for (auto &kv : digit_map) {
-            bool is_match = true;
-            for (int j = kv.first.length() - 1; j >= 0; j++) {
-                if (line[i+j] != kv.first[j]) {
-                    is_match = false;
-                    break;
-                }
-            }
-            if (is_match) {
-                return kv.second;
-            }
-        }
-        if (isdigit(line[i])) {
-            res = line[i];
-            return res;
+        if (!found_match) {
+            res += line[i];
         }
     }
     return res;
@@ -78,9 +59,20 @@ int main()
     ifstream test_case("input.txt");
     if (test_case.is_open()) {
         while ( getline (test_case,line) ){
+            string converted_line = convert_line(line);
             string num;
-            num += find_first_digit(line);
-            num += find_last_digit(line);
+            for (int i = 0; i < converted_line.length(); i++) {
+                if (isdigit(converted_line[i])) {
+                    num += converted_line[i];
+                    break;
+                }
+            }
+            for (int i = converted_line.length() - 1; i >= 0; i--) {
+                if (isdigit(converted_line[i])) {
+                    num += converted_line[i];
+                    break;
+                }
+            }
             sum += stod(num);
         }
     }
