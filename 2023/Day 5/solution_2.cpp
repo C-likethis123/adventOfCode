@@ -95,18 +95,19 @@ class Pair {
         };
         vector<Pair> transform(Transformation& t) {
             long long t_end = t.src + t.range;
-            cout << "transform: ";
             vector<Pair> res;
             if (t_end < start || end < t.src) {
                 res.emplace_back(*this);
-                print(res);
+                cout << "no transform: ";
+                // print(res);
                 return {*this};
             }
             // 1. fully overlapping
             if (t.src <= start && t_end >= end) {
                 long long offset = start - t.src;
                 res.emplace_back(t.dest + offset, range);
-                print(res);
+                cout << "transform 1: ";
+                // print(res);
                 return {
                     Pair(t.dest + offset, range)
                 };
@@ -116,7 +117,8 @@ class Pair {
                 long long offset = start - t.src;
                 res.emplace_back(t.dest + offset, affected_range);
                 res.emplace_back(t_end+ 1, end - t_end);
-                print(res);
+                 cout << "transform 2: ";
+                // print(res);
                 return {
                     Pair(t.dest + offset, affected_range),
                     Pair(t_end + 1, end - t_end)
@@ -127,7 +129,8 @@ class Pair {
                 long long affected_range_2 = end - t.src;
                 res.emplace_back(start, affected_range_1);
                 res.emplace_back(t.dest, affected_range_2);
-                print(res);
+                 cout << "transform 3: ";
+                // print(res);
                 return {
                     Pair(start, affected_range_1),
                     Pair(t.dest, affected_range_2)
@@ -140,7 +143,8 @@ class Pair {
                 res.emplace_back(start, range_1);
                 res.emplace_back(t.dest, range_2);
                 res.emplace_back(t_end + 1, range_3);
-                print(res);
+                cout << "transform 4: ";
+                // print(res);
                 return {
                     Pair(start, range_1),
                     Pair(t.dest, range_2),
@@ -177,6 +181,10 @@ class NumberRange {
             for (Pair &p : pairs) {
                 add(p);
             }
+        };
+        
+        void add(NumberRange &nr) {
+            add(nr.ranges);
         };
 
         NumberRange update(Transformation& t) {
@@ -242,10 +250,17 @@ Transformations get_map(ifstream &input) {
     return res;
 }
 
+
+//TODO: how to prevent transformations to work on already transformed values?
 void transform(NumberRange& seeds, Transformations& map) {
+    NumberRange res;
     for (Transformation& t : map) {
-        seeds = seeds.update(t);
+        NumberRange i = seeds.update(t);
+        res.add(i);
+        i.print();
     }
+    cout << "final: ";
+    seeds = res;
     seeds.print();
 }
 

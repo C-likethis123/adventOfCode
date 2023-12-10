@@ -9,31 +9,189 @@
 #include <sstream>
 
 /*
-idea:
-- read seeds
-- read map
-- iterate through seeds, copy seeds and create mapping.
-- take the new mapping and remap until its done
+problem statement: instead of a list of values, how to make it work for a list of range of values?
 
-- issues: for new mapping, i cannot depend on array numbering.
+some observations:
+- we can apply the transformation to a "range" instead of all the values.
+- when needed, we need to "split" the range of values.
 
 
-how to do one mapping:
-- seed to soil: use a set to represent all numbers. 
-- if there is a number that needs to be remapped, remove the number and replace with the remapped number.
-    - this would not work if the remapping range overlaps, so i need two copies.
-    - a set means all the numbers would need to be copied, which is a waste of space. 
-    it would be better to just save the mappings that needs to be remapped.
+pair: [start, range]
+"intervals needed":
+- initial values
+- transformations: source to destination values
+  - handle the case where only parts of the number ranges are translated, including how to split the pairs etc.
+
+- find minimum value from number ranges
+
+Data structure: list of "number range"
+operations:
+    - find minimum value
+    - update range with transformation
+maintain assumptions:
+    - sort ranges - easier to replace
+    - ranges are non overlapping - overlapping ranges should be merged
+
+Huge question: how to update?
+- two things to update: range + start
+- full transformations: update "start" from source to destination
+- splitting range: 
+    when split into two ranges:
+    1. find affected region. split into two ranges.
+    2. transform affected range.
+
+    when split into 3 ranges:
+    1. split into 3 ranges
+    2. transform middle range
+
+Avoiding errors:
+- modifying the same data structure while iterating through it is not a good sign.
+- copy into a new data structure as we're adding to it.
 
 
-things to take note of:
-- integer overflows
-- when changing a type (eg long to long long), take note of all the possible values, data structures that hold these values.
+Data structures needed:
+- Pair: [start, range]
+    - vector<Pair> update(Transformation)
+        - return new range, transform if needed
+- Transformation: [start, end, range]
+- NumberRange
+    - vector<Pair>, sorted
+    - add(Pair p) op:
+        - add a pair to the underlying representation
+        - no updates needed: completely overlaps with existing information
+        - merge needed: update start/range
+        - add range
+    - update(NumberRange r, Transformation t)
+        - iterate through all pairs in NumberRange
+        completely overlap: create a new pair.
+        is in middle: split into 3 pairs. transform the middle. return.
+        is in half: split into affected and non affected region. transform affected region. return.
+        - add to a new data structure, return new data structure
+
 */
 using namespace std;
 
-typedef tuple<long long, long long, long long> Entry;
-typedef vector<Entry> Map;
+class Transformation {
+    public:
+        long long src;
+        long long dest;
+        long long range;
+        Transformation(long long src, long long dest, long long range) : src(src), dest(dest), range(range){};
+};
+
+typedef vector<Transformation> Transformations;
+
+class Pair {
+    public: 
+        long long start;
+        long long range;
+        long long end;
+        Pair(long long start, long long range) : start(start), range(range), end(range + start - 1) {};
+        void print(vector<Pair>& ranges) {
+            for (Pair& p : ranges) {
+                cout << "["<< p.start << ", "<< p.end << "],";
+            }
+            cout << endl;
+        };
+        vector<Pair> transform(Transformation& t) {
+            long long t_end = t.src + t.range;
+            vector<Pair> res;
+            if (t_end < start || end < t.src) {
+                res.emplace_back(*this);
+                return {*this};
+            }
+            // 1. fully overlapping
+            if (t.src <= start && t_end >= end) {
+                long long offset = start - t.src;
+                res.emplace_back(t.dest + offset, range);
+                return {
+                    Pair(t.dest + offset, range)
+                };
+            // 2. only front is affected
+            } else if (t.src <= start && t_end < end) {
+                long long affected_range = t_end - start;
+                long long offset = start - t.src;
+                res.emplace_back(t.dest + offset, affected_range);
+                res.emplace_back(t_end+ 1, end - t_end);
+                return {
+                    Pair(t.dest + offset, affected_range),
+                    Pair(t_end + 1, end - t_end)
+                };
+            // 3. only back is affected
+            } else if (t.src > start && t_end >= end) {
+                long long affected_range_1 = t.src - start;
+                long long affected_range_2 = end - t.src;
+                res.emplace_back(start, affected_range_1);
+                res.emplace_back(t.dest, affected_range_2);
+                return {
+                    Pair(start, affected_range_1),
+                    Pair(t.dest, affected_range_2)
+                };
+            // 4. the middle is affected
+            } else {
+                long long range_1 = t.src - start;
+                long long range_2 = t.range;
+                long long range_3 = end - t_end;
+                res.emplace_back(start, range_1);
+                res.emplace_back(t.dest, range_2);
+                res.emplace_back(t_end + 1, range_3);
+                return {
+                    Pair(start, range_1),
+                    Pair(t.dest, range_2),
+                    Pair(t_end + 1, range_3)
+                };
+            }
+        };
+        
+        bool operator==(const Pair& rhs) {
+            return start == rhs.start && range == rhs.range && end == rhs.end;
+        };
+};
+
+class NumberRange {
+    public:
+        vector<Pair> ranges;
+        void add(Pair &new_pair) {
+            vector<Pair> new_ranges;
+            for (int i = 0; i < ranges.size(); i++){
+                if (ranges[i].end < new_pair.start) {
+                    new_ranges.push_back(ranges[i]);
+                } else if (new_pair.end < ranges[i].start) {
+                    new_ranges.push_back(new_pair);
+                    new_ranges.insert(new_ranges.end(), ranges.begin() + i, ranges.end());
+                    ranges.swap(new_ranges);
+                    return;
+                } else {
+                    long long new_start = min(new_pair.start, ranges[i].start);
+                    long long new_end = max(new_pair.end, ranges[i].end);
+                    new_pair = Pair(new_start, new_end - new_start + 1);
+                }
+            }
+            new_ranges.push_back(new_pair);
+            ranges.swap(new_ranges);
+        };
+
+        void add(vector<Pair> &pairs) {
+            for (Pair &p : pairs) {
+                add(p);
+            }
+        };
+        
+        void add(NumberRange &nr) {
+            add(nr.ranges);
+        };
+
+        long long get_min() {
+            return ranges[0].start;
+        };
+        
+        void print() {
+            for (Pair& p : ranges) {
+                cout << "["<< p.start << ", "<< p.end << "],";
+            }
+            cout << endl;
+        };
+};
 
 void split(string s, std::vector<std::string>& v, string delimiter) {
     size_t pos = 0;
@@ -48,47 +206,51 @@ void split(string s, std::vector<std::string>& v, string delimiter) {
     v.push_back(s);
 }
 
-vector<long long> get_seeds(ifstream &input) {
+NumberRange get_seeds(ifstream &input) {
     string line;
     vector<string> v;
     getline(input, line);
     line = line.substr(std::string("seeds: ").size());
     split(line, v, " ");
 
-    vector<long long> res;
-    for (string num : v) {
-        res.push_back(stoll(num));
+    NumberRange res;
+    for (int i = 0; i < v.size() - 1; i += 2) {
+        Pair new_pair(stoll(v[i]), stoll(v[i+1]));
+        res.add(new_pair);
     }
     return res;
 }
 
-Map get_map(ifstream &input) {
+Transformations get_map(ifstream &input) {
     string line;
     getline(input, line); // skip first line
-    Map res;
+    cout << line;
+    Transformations res;
     vector<string> v;
     while (getline(input, line) && !line.empty()) {
         split(line, v, " ");
-        res.emplace_back(stol(v[0]), stol(v[1]), stol(v[2]));
+        res.emplace_back(stoll(v[1]), stoll(v[0]), stoll(v[2]));
         v.clear();
     }
     return res;
 }
 
-void transform(vector<long long>& seeds, Map& map) {
-    vector<long long> res = seeds;
-    for (int i = 0; i < seeds.size(); i++) {
-        long long seed = seeds[i];
-        for (Entry e : map) {
-            long long dest = std::get<0>(e);
-            long long src = std::get<1>(e);
-            long long len = std::get<2>(e);
-            bool in_range = (seed >= src) && (seed < (src + len));
-            if (in_range) {
-                long long offset = seed - src;
-                long long new_seed = dest + offset;
-                res[i] = new_seed;
+//TODO: how to prevent transformations working on already transformed values?
+void transform(NumberRange& seeds, Transformations& map) {
+    NumberRange res;
+    for (Pair& p : seeds.ranges) {
+        bool not_added = true;
+        for (Transformation& t : map) {
+            vector<Pair> i = p.transform(t);
+            if (!(i.size() == 1 && i[0] == p)) {
+                not_added = false;
+                res.add(i);
+                res.print();
             }
+        }
+        if (not_added) {
+            res.add(p);
+            res.print();
         }
     }
     seeds = res;
@@ -100,30 +262,37 @@ int main()
     string line;
     ifstream test_case("input.txt");
     if (test_case.is_open()) {
-        vector<long long> seeds = get_seeds(test_case);
+        NumberRange seeds = get_seeds(test_case);
         getline(test_case, line);
-        Map seeds_soil_map = get_map(test_case);
+        Transformations seeds_soil_map = get_map(test_case);
         transform(seeds, seeds_soil_map);
+        cout << seeds.get_min() <<endl;
 
-        Map soil_fertilizer_map = get_map(test_case);
+        Transformations soil_fertilizer_map = get_map(test_case);
         transform(seeds, soil_fertilizer_map);
+        cout << seeds.get_min() <<endl;
 
-        Map fertilizer_water_map = get_map(test_case);
+        Transformations fertilizer_water_map = get_map(test_case);
         transform(seeds, fertilizer_water_map);
+        cout << seeds.get_min() <<endl;
 
-        Map water_light_map = get_map(test_case);
+        Transformations water_light_map = get_map(test_case);
         transform(seeds, water_light_map);
+        cout << seeds.get_min() <<endl;
 
-        Map light_temp_map = get_map(test_case);
+        Transformations light_temp_map = get_map(test_case);
         transform(seeds, light_temp_map);
+        cout << seeds.get_min() <<endl;
 
-        Map temp_humidity_map = get_map(test_case);
+        Transformations temp_humidity_map = get_map(test_case);
         transform(seeds, temp_humidity_map);
+        cout << seeds.get_min() <<endl;
 
-        Map humidity_location_map = get_map(test_case);
+        Transformations humidity_location_map = get_map(test_case);
         transform(seeds, humidity_location_map);
+        cout << seeds.get_min() <<endl;
 
-        ans = *min_element(seeds.begin(), seeds.end());
+        ans = seeds.get_min();
     }
     cout << "ans: " << fixed << ans << '\n';
     return 0;
