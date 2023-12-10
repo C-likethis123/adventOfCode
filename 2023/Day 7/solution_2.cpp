@@ -34,7 +34,6 @@ unordered_map<char, int> strength = {
     {'A',14 },
     {'K',13 },
     {'Q',12 },
-    {'J',11 },
     {'T',10 },
     {'9',9 },
     {'8',8 },
@@ -55,10 +54,9 @@ class Card {
             for (int i = 0; i < 5; i++) {
                 int l_strength = strength[l.card[i]];
                 int r_strength = strength[r.card[i]];
-                if (l_strength < r_strength) {
-                    return true;
-                } else if (r_strength < l_strength) {
-                    return false;
+                // cout << l_strength << ", "<< r_strength << ": " << (l_strength < r_strength ? "true" : "false") << endl;
+                if (l_strength != r_strength) {
+                    return l_strength < r_strength;
                 }
             }
             // it's a tie, return false
@@ -126,10 +124,8 @@ class Hand {
         friend bool operator<(const Hand& l, const Hand& r) {
             int l_move = l.get_move();
             int r_move = r.get_move();
-            if (l_move < r_move) {
-                return true;
-            } else if (l_move > r_move) {
-                return false;
+            if (l_move != r_move) {
+                return l_move < r_move;
             } else {
                 return l.card < r.card;
             }
@@ -150,10 +146,10 @@ int main()
             v.clear();
         }
         
-        long rank = hands.size();
+        long long rank = hands.size();
         for (; !hands.empty(); hands.pop()) {
             Hand h = hands.top();
-            cout << h.card.card << ": rank: " <<rank<<", bid: " << h.bid<<endl;
+            // cout << h.card.card << ": move: " <<h.get_move()<<", bid: " << h.bid<<endl;
             ans += rank * h.bid;
             rank -= 1;
         }
