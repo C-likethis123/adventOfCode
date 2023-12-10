@@ -23,18 +23,20 @@ using namespace std;
 int main()
 {
     string line;
-    long long cur_time = 42899189;
-    long long distance = 308117012911467;
+    long long cur_time = //add input;
+    long long distance = // add input;
     long long ways = 0;
     for (long long speed = 1; speed < cur_time; speed++) {
         // compute max distance
-        int time_to_move = cur_time - speed;
-        int current_distance = time_to_move * speed;
+        long long time_to_move = cur_time - speed;
+        long long current_distance = time_to_move * speed;
         if (current_distance > distance) {
             ways++;
         }
     }
     
+    ofstream debug("ans.txt");
+    debug << fixed << ways;
     cout << "ans: " << fixed << ways << '\n';
     return 0;
 }
