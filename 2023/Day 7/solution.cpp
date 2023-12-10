@@ -43,8 +43,7 @@ unordered_map<char, int> strength = {
     {'5',5 },
     {'4',4 },
     {'3',3},
-    {'2',2},
-    {'J', 1}
+    {'2',2}
 };
 
 class Card {
@@ -80,45 +79,37 @@ class Hand {
         Hand(string s, int bid) : card(s), bid(bid) {};
         int get_move() const {
             unordered_map<char, int> map;
-            int num_j = 0;
             for (char c : card.card) {
-                if (c != 'J') {
-                    if (map.find(c) != map.end()) {
-                        map[c] += 1;
-                    } else {
-                        map[c] = 1;
-                    }
+                if (map.find(c) != map.end()) {
+                    map[c] += 1;
                 } else {
-                    num_j += 1;
+                    map[c] = 1;
                 }
             }
-            
-            int max_size = 0;
-            char max_key;
-            for (auto &x : map) {
-                if (x.second > max_size) {
-                    max_key = x.first;
-                    max_size = x.second;
-                }
-            }
-            max_size += num_j;
-            map[max_key] += num_j;
-            if (max_size == 5) {
+            if (map.size() == 1) {
                 return FIVE_OF_A_KIND;
-            } else if (max_size == 4) {
-                return FOUR_OF_A_KIND;
-            } else if (max_size == 3) {
-                if (map.size() == 2) {
+            } else if (map.size() == 2) {
+                int max_size = 0;
+                for (auto &x : map) {
+                    max_size = max(x.second, max_size);
+                }
+                if (max_size == 4) {
+                    return FOUR_OF_A_KIND;
+                } else {
                     return FULL_HOUSE;
-                } else {
+                }
+            } else if (map.size() == 3) {
+                int max_size = 0;
+                for (auto &x : map) {
+                    max_size = max(x.second, max_size);
+                }
+                if (max_size == 3) {
                     return THREE_OF_A_KIND;
-                }
-            } else if (max_size == 2) {
-                if (map.size() == 3) {
-                    return TWO_PAIR;
                 } else {
-                    return ONE_PAIR;
+                    return TWO_PAIR;
                 }
+            } else if (map.size() == 4) {
+                return ONE_PAIR;
             } else {
                 return HIGH_CARD;
             }
@@ -153,7 +144,6 @@ int main()
         long rank = hands.size();
         for (; !hands.empty(); hands.pop()) {
             Hand h = hands.top();
-            cout << h.card.card << ": rank: " <<rank<<", bid: " << h.bid<<endl;
             ans += rank * h.bid;
             rank -= 1;
         }
