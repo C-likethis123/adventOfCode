@@ -22,19 +22,25 @@ using namespace std;
 
 int main()
 {
+    long long ans = 1;
     string line;
-    long long cur_time = 42899189;
-    long long distance = 308117012911467;
-    long long ways = 0;
-    for (long long speed = 1; speed < cur_time; speed++) {
-        // compute max distance
-        int time_to_move = cur_time - speed;
-        int current_distance = time_to_move * speed;
-        if (current_distance > distance) {
-            ways++;
+    int times[] = // TODO add inputs;
+    int distances[] = // TODO add inputs};
+    for (int i = 0; i < times.length; i++) {
+        int cur_time = times[i];
+        int distance = distances[i];
+        int ways = 0;
+        for (int speed = 1; speed < cur_time; speed++) {
+            // compute max distance
+            int time_to_move = cur_time - speed;
+            int current_distance = time_to_move * speed;
+            if (current_distance > distance) {
+                ways++;
+            }
         }
+        ans *= ways;
     }
     
-    cout << "ans: " << fixed << ways << '\n';
+    cout << "ans: " << fixed << ans << '\n';
     return 0;
 }
