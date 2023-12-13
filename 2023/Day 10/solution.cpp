@@ -8,6 +8,7 @@
 #include <iterator>
 #include <sstream>
 #include <queue>
+#include <climits>
 
 /*
 graph question.
@@ -128,12 +129,11 @@ vector<Node> get_subgraph_nodes(int r, int c) {
     // do bfs and store nodes in a set
     unordered_set<Node, Node::HashFunction> encountered;
     for (; !queue.empty(); queue.pop_back()) {
-        Node n = queue.back();
+        Node& n = queue.back();
         encountered.insert(n);
         auto directions = get_directions(letters[n.first][n.second]);
-        for (auto direction : directions) {
-            Node neighbour(n.first + direction.first, n.second + direction.second);
-            // cout << n.first + direction.first << "," << n.second + direction.second<< endl;
+        for (int i = 0; i < directions.size(); i++) {
+            Node neighbour(n.first + directions[i].first, n.second + directions[i].second);
             n.add_neighbour(neighbour);
             if (encountered.find(neighbour) == encountered.end()) {
                 queue.insert(queue.begin(), neighbour);
@@ -141,9 +141,7 @@ vector<Node> get_subgraph_nodes(int r, int c) {
         }
     }
     // convert set to vector and return
-    for (Node x : encountered) {
-        queue.push_back(x);
-    }
+    copy(encountered.begin(), encountered.end(), back_inserter(queue));
     return queue;
 }
 
@@ -167,7 +165,6 @@ int main()
         }
         
         vector<Node> nodes = get_subgraph_nodes(starting_position.first, starting_position.second);
-        // cout << nodes.size() << endl;
         for (Node n : nodes) {
             int x = n.first;
             int y = n.second;
@@ -175,9 +172,6 @@ int main()
             for (Node neighbour : n.neighbours) {
                 int n_x = neighbour.first;
                 int n_y = neighbour.second;
-                if (letters[x][y] == 'S') {
-                    cout << "starting is here: "<< distances[x][y] << endl;
-                }
                 if (distances[x][y] + 1 < distances[n_x][n_y]) {
                     cout << distances[x][y] + 1 << endl;
                     distances[n_x][n_y] = distances[x][y] + 1;
