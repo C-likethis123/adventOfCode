@@ -104,6 +104,7 @@ vector<pair<int, int>> get_directions(char letter) {
             return { S, E };
         case '.':
             return {};
+        // hardcoded because i'm too lazy
         case 'S':
             return {N, S};
         default:
@@ -132,15 +133,17 @@ vector<Node> get_subgraph_nodes(int r, int c) {
         auto directions = get_directions(letters[n.first][n.second]);
         for (auto direction : directions) {
             Node neighbour(n.first + direction.first, n.second + direction.second);
+            // cout << n.first + direction.first << "," << n.second + direction.second<< endl;
             n.add_neighbour(neighbour);
-            if (encountered.find(neighbour) != encountered.end()) {
-                queue.push_back(neighbour);
+            if (encountered.find(neighbour) == encountered.end()) {
+                queue.insert(queue.begin(), neighbour);
             }
         }
     }
     // convert set to vector and return
-    queue.reserve(encountered.size());
-    copy(encountered.begin(), encountered.end(), queue.begin());
+    for (Node x : encountered) {
+        queue.push_back(x);
+    }
     return queue;
 }
 
@@ -158,24 +161,29 @@ int main()
                 distances[r][c] = INT_MAX;
                 if (letters[r][c] == 'S') {
                     starting_position = {r, c};
+                    distances[r][c] = 0;
                 }
             }
         }
         
         vector<Node> nodes = get_subgraph_nodes(starting_position.first, starting_position.second);
-        cout << nodes.size() << endl;
+        // cout << nodes.size() << endl;
         for (Node n : nodes) {
             int x = n.first;
             int y = n.second;
+            cout << n.neighbours.size() << endl;
             for (Node neighbour : n.neighbours) {
                 int n_x = neighbour.first;
                 int n_y = neighbour.second;
+                if (letters[x][y] == 'S') {
+                    cout << "starting is here: "<< distances[x][y] << endl;
+                }
                 if (distances[x][y] + 1 < distances[n_x][n_y]) {
+                    cout << distances[x][y] + 1 << endl;
                     distances[n_x][n_y] = distances[x][y] + 1;
                 }
             }
         }
-
         for (Node n : nodes) {
             if (distances[n.first][n.second] > ans) {
                 ans = distances[n.first][n.second];
