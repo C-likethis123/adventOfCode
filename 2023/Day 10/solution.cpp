@@ -9,6 +9,7 @@
 #include <sstream>
 #include <queue>
 #include <climits>
+#include <bitset>
 
 /*
 graph question.
@@ -30,24 +31,10 @@ dijkstra's: only works with positive edge, acylic graphs
 bellman ford: can be used to detect negative edge weight cycles
 
 
-code:
-- init graph as an edge list by reading the letter and creating edges for all directions that the letter can go
-- init distance matrix, set to infinity
-- iterate through all edges for v-1 iterations
-    - update distance if it can be relaxed.
-
-in the end:
-- take the max distance.
-
-Time complexity: O(EV)
-
-how to optimise:
-- only grids reachable from S needs to be considered.
-
-bad_alloc could be due to a lack of memory.
-
 another approach:
-- dfs until you reach a cycle. then divide by 2.
+- start from START
+- keep iterating until reaching the end of the loop (there are two nodes, start from X and end at Y)
+- return length / 2
 */
 using namespace std;
 
@@ -77,7 +64,9 @@ pair<int, int> W = {0, -1};
 vector<pair<int, int>> get_directions(char letter) {
         // hardcoded because i'm too lazy
         vector<pair<int, int>> directions;
-        if (letter == '|' || letter == 'S'){
+        if (letter == 'S') {
+            directions.push_back(N);
+        } else if (letter == '|'){
             directions.push_back(N);
             directions.push_back(S);
         } else if (letter == '-') {
@@ -131,26 +120,43 @@ int main()
             }
         }
         test_case.close();
-        
-        for (int x = 0; x < L; x++) {
-            for (int y = 0; y < L; y++) {
-                vector<pair<int, int>> directions = get_directions(letters[x][y]);
-                for (auto& direction : directions) {
-                    int n_x = direction.first + x;
-                    int n_y = direction.second + y;
-                    if (distances[x][y] + 1 < distances[n_x][n_y]) {
-                        distances[n_x][n_y] = distances[x][y] + 1;
-                    }
+
+            
+        vector<pair<int, int>> queue;
+        bitset<140*140> encountered;
+        queue.push_back(starting_position);
+        for(; !queue.empty(); queue.pop_back()) {
+            pair<int, int> p = queue.back();
+            int x = p.first;
+            int y = p.second;
+            if (x == 20 && y == 88) {
+                break;
+            }
+            
+            encountered[x * 140 + y] = true;
+            vector<pair<int, int>> directions = get_directions(letters[x][y]);
+            for (auto& direction : directions) {
+                int n_x = direction.first + x;
+                int n_y = direction.second + y;
+                if (distances[x][y] + 1 < distances[n_x][n_y]) {
+                    distances[n_x][n_y] = distances[x][y] + 1;
+                }
+                if (!encountered.test(n_x * 140 + n_y)) {
+                    queue.emplace_back(n_x, n_y);
                 }
             }
-        }
+        }   
+       
         for (int i = 0; i < L; i++) {
             for (int j = 0; j < L; j++) {
                 debug << distances[i][j] << '|';
+                if (ans < distances[i][j] && distances[i][j] != INT_MAX - 1) {
+                    ans = distances[i][j];
+                }
             }
             debug << endl;
         }
-        // cout << "ans: " << fixed << ans << '\n';
+        cout << "ans: " << fixed << ans << '\n';
     }
     return 0;
 }
