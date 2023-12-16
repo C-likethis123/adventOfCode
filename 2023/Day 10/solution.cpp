@@ -43,8 +43,15 @@ Time complexity: O(EV)
 
 how to optimise:
 - only grids reachable from S needs to be considered.
+
+bad_alloc could be due to a lack of memory.
+
+another approach:
+- dfs until you reach a cycle. then divide by 2.
 */
 using namespace std;
+
+#define L 140
 
 void split(string s, std::vector<std::string>& v, string delimiter) {
     size_t pos = 0;
@@ -59,58 +66,39 @@ void split(string s, std::vector<std::string>& v, string delimiter) {
     v.push_back(s);
 }
 
-class Node {
-    public:
-        int first;
-        int second;
-        vector<Node> neighbours;
-        Node(int first, int second) : first(first), second(second) {};
-        struct HashFunction
-        {
-            size_t operator()(const Node& node) const
-            {
-                size_t xHash = std::hash<int>()(node.first);
-                size_t yHash = std::hash<int>()(node.second) << 1;
-                return xHash ^ yHash;
-            }
-        };
-        void add_neighbour(Node& n) {
-            neighbours.push_back(n);
-        };
-        bool operator==(const Node& n) const {
-            return n.first == first && n.second == second;
-        };
-};
 
-char letters[140][140];
+char letters[L][L];
 
-pair<int, int> N = {1, 0};
-pair<int, int> S = {-1, 0};
+pair<int, int> N = {-1, 0};
+pair<int, int> S = {1, 0};
 pair<int, int> E = {0, 1};
 pair<int, int> W = {0, -1};
 
 vector<pair<int, int>> get_directions(char letter) {
-    switch (letter) {
-        case '|': 
-            return { N, S };
-        case '-':
-            return { E, W };
-        case 'L':
-            return { N, E };
-        case 'J':
-            return { N, W };
-        case '7':
-            return { S, W };
-        case 'F':
-            return { S, E };
-        case '.':
-            return {};
         // hardcoded because i'm too lazy
-        case 'S':
-            return {N, S};
-        default:
-            return {};
-    }
+        vector<pair<int, int>> directions;
+        if (letter == '|' || letter == 'S'){
+            directions.push_back(N);
+            directions.push_back(S);
+        } else if (letter == '-') {
+            directions.push_back(E);
+            directions.push_back(W);
+        } else if (letter == 'L') {
+            directions.push_back(N);
+            directions.push_back(E);
+        } else if (letter == 'J') {
+            directions.push_back(N);
+            directions.push_back(W);
+        } else if (letter == '7') {
+            directions.push_back(S);
+            directions.push_back(W);
+        } else if (letter == 'F') {
+            directions.push_back(S);
+            directions.push_back(E);
+        } else if (letter == '.') {
+            return directions;
+        }
+        return directions;
 }
 
 /*
@@ -122,68 +110,47 @@ assumptions:
 - i can translate a letter into a node with its corresponding neighbours
 - no out of bound errors, assume input is valid
 */
-vector<Node> get_subgraph_nodes(int r, int c) {
-    vector<Node> queue;
-    queue.emplace_back(r, c);
-
-    // do bfs and store nodes in a set
-    unordered_set<Node, Node::HashFunction> encountered;
-    for (; !queue.empty(); queue.pop_back()) {
-        Node& n = queue.back();
-        encountered.insert(n);
-        auto directions = get_directions(letters[n.first][n.second]);
-        for (int i = 0; i < directions.size(); i++) {
-            Node neighbour(n.first + directions[i].first, n.second + directions[i].second);
-            n.add_neighbour(neighbour);
-            if (encountered.find(neighbour) == encountered.end()) {
-                queue.insert(queue.begin(), neighbour);
-            }
-        }
-    }
-    // convert set to vector and return
-    copy(encountered.begin(), encountered.end(), back_inserter(queue));
-    return queue;
-}
 
 int main()
 {
     int ans = INT_MIN;
     string line;
     ifstream test_case("input.txt");
+    ofstream debug("output.txt");
     if (test_case.is_open()) {
-        int distances[140][140];
+        int distances[L][L];
         pair<int, int> starting_position;
         for (int r = 0; getline(test_case, line); r++) {
             for (int c = 0; c < line.size(); c++) {
                 letters[r][c] = line[c];
-                distances[r][c] = INT_MAX;
+                distances[r][c] = INT_MAX - 1;
                 if (letters[r][c] == 'S') {
                     starting_position = {r, c};
                     distances[r][c] = 0;
                 }
             }
         }
+        test_case.close();
         
-        vector<Node> nodes = get_subgraph_nodes(starting_position.first, starting_position.second);
-        for (Node n : nodes) {
-            int x = n.first;
-            int y = n.second;
-            cout << n.neighbours.size() << endl;
-            for (Node neighbour : n.neighbours) {
-                int n_x = neighbour.first;
-                int n_y = neighbour.second;
-                if (distances[x][y] + 1 < distances[n_x][n_y]) {
-                    cout << distances[x][y] + 1 << endl;
-                    distances[n_x][n_y] = distances[x][y] + 1;
+        for (int x = 0; x < L; x++) {
+            for (int y = 0; y < L; y++) {
+                vector<pair<int, int>> directions = get_directions(letters[x][y]);
+                for (auto& direction : directions) {
+                    int n_x = direction.first + x;
+                    int n_y = direction.second + y;
+                    if (distances[x][y] + 1 < distances[n_x][n_y]) {
+                        distances[n_x][n_y] = distances[x][y] + 1;
+                    }
                 }
             }
         }
-        for (Node n : nodes) {
-            if (distances[n.first][n.second] > ans) {
-                ans = distances[n.first][n.second];
+        for (int i = 0; i < L; i++) {
+            for (int j = 0; j < L; j++) {
+                debug << distances[i][j] << '|';
             }
+            debug << endl;
         }
+        // cout << "ans: " << fixed << ans << '\n';
     }
-    cout << "ans: " << fixed << ans << '\n';
     return 0;
 }
