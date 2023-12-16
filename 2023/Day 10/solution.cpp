@@ -123,17 +123,20 @@ int main()
 
             
         vector<pair<int, int>> queue;
-        bitset<140*140> encountered;
+        bitset<L*L> encountered;
         queue.push_back(starting_position);
         for(; !queue.empty(); queue.pop_back()) {
             pair<int, int> p = queue.back();
             int x = p.first;
             int y = p.second;
+            if (encountered.test(x * L + y)) {
+                continue;
+            }
             if (x == 20 && y == 88) {
                 break;
             }
             
-            encountered[x * 140 + y] = true;
+            encountered[x * L + y] = true;
             vector<pair<int, int>> directions = get_directions(letters[x][y]);
             for (auto& direction : directions) {
                 int n_x = direction.first + x;
@@ -141,8 +144,8 @@ int main()
                 if (distances[x][y] + 1 < distances[n_x][n_y]) {
                     distances[n_x][n_y] = distances[x][y] + 1;
                 }
-                if (!encountered.test(n_x * 140 + n_y)) {
-                    queue.emplace_back(n_x, n_y);
+                if (!encountered.test(n_x * L + n_y)) {
+                    queue.emplace(queue.begin(), n_x, n_y);
                 }
             }
         }   
@@ -156,6 +159,7 @@ int main()
             }
             debug << endl;
         }
+        ans = ans / 2 + 1;
         cout << "ans: " << fixed << ans << '\n';
     }
     return 0;
