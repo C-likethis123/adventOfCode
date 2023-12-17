@@ -25,7 +25,10 @@ void split(string s, std::vector<std::string>& v, string delimiter) {
         }
         s.erase(0, pos + delimiter.length());
     }
-    v.push_back(s);
+    if (!s.empty()){
+       v.push_back(s); 
+    }
+    
 }
 
 void split(string s, std::vector<int>& v, string delimiter) {
