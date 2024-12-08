@@ -48,7 +48,7 @@ mkdir -p "../$FOLDER_NAME"
 
 # Generate .cpp files with content
 echo "$CPP_TEMPLATE" > "../$FOLDER_NAME/solution.cpp"
-echo "$CPP_TEMPLATE" > "../$FOLDER_NAME/solution_2.cpp"
+echo "" > "../$FOLDER_NAME/solution_2.cpp"
 
 # Print success message
 echo "Folder '$FOLDER_NAME' created with solution.cpp and solution_2.cpp"
