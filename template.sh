@@ -25,10 +25,14 @@ CPP_TEMPLATE='#include <algorithm>
 
 using namespace std;
 
-int main() {
+int main(int argc, const char *argv[]) {
   long ans = 0;
   string line;
-  ifstream test_case("input.txt");
+  if (argc < 2) {
+    cerr << "supply a file name";
+    return -1;
+  }
+  ifstream test_case(argv[1]);
   // ofstream debug("output.txt");
   if (test_case.is_open()) {
      getline(test_case, line);
