@@ -83,16 +83,7 @@ int main() {
         int num = numbers[i];
         if (forbidden.count(num)) {
           is_safe = false;
-          // determine place to put it in the list
-          for (auto it = in_order_list.begin(); it != in_order_list.end();
-               ++it) {
-            if (orderings[*it].count(num)) {
-              in_order_list.insert(it, num);
-              break;
-            }
-          }
-        } else {
-          in_order_list.push_back(num);
+          break;
         }
         // using .merge method does not work because it will splice
         // orderings[num]
@@ -103,11 +94,11 @@ int main() {
       }
 
       if (!is_safe) {
-        // reorder the numbers here, there are no even-numbered list lengths in the input given
-        for (size_t i = 0; i < in_order_list.size() / 2; i++) {
-          in_order_list.pop_front();
-        }
-        ans += in_order_list.front();
+        // sort it to get the ordered list - sorting works but my custom bubble sort doesn't. weird
+        std::sort(numbers.begin(), numbers.end(), [&orderings](const int& v1, const int v2) {
+          return (orderings[v2]).count(v1) > 0;
+        });
+        ans += numbers[numbers.size() / 2];
       }
     }
   }
