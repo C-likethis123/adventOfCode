@@ -45,6 +45,7 @@ int main(int argc, const char *argv[]) {
   long ans = 0;
   string line;
   ifstream test_case(argv[1]);
+  // learning point: one candidate of a capture group will override the previous one
   std::regex re("(\\d+)");
   // ofstream debug("output.txt");
   if (test_case.is_open()) {
