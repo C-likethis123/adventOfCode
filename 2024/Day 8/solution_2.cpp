@@ -1,3 +1,4 @@
+#include "user_defined.h"
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -12,27 +13,50 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "user_defined.h"
 using namespace std;
 
 /**
-to compile this: clang++ -I/(project root)/include solution.cpp && ./a.out input2.txt
+to compile this: clang++ -I/(project root)/include solution.cpp && ./a.out
+input2.txt
  */
 vector<vector<char>> matrix;
-vector<user_defined::pair> get_possible_locations(user_defined::pair &p1,
-                                              user_defined::pair &p2) {
-  int horizontal_distance = p1.first - p2.first;
-  int vertical_distance = p1.second - p2.second;
-
-  return std::vector({
-      user_defined::pair({p1.first + horizontal_distance, p1.second + vertical_distance}),
-      user_defined::pair({p2.first - horizontal_distance, p2.second - vertical_distance}),
-  });
-}
-
 bool in_bounds(user_defined::pair &p1) {
   return p1.first >= 0 && p1.first < matrix.size() && p1.second >= 0 &&
          p1.second < matrix[0].size();
+}
+
+vector<user_defined::pair> get_possible_locations(user_defined::pair &p1,
+                                                  user_defined::pair &p2) {
+  std::vector<user_defined::pair> res;
+  int horizontal_distance = p1.first - p2.first;
+  int vertical_distance = p1.second - p2.second;
+
+  // in one distance
+  user_defined::pair next_location({
+      p1.first + horizontal_distance,
+      p1.second + vertical_distance,
+  });
+  while (in_bounds(next_location)) {
+    res.emplace_back(next_location);
+    next_location = user_defined::pair({
+        next_location.first + horizontal_distance,
+        next_location.second + vertical_distance,
+    });
+  }
+
+  // in another distance
+  next_location = user_defined::pair(
+      {p2.first - horizontal_distance, p2.second - vertical_distance});
+
+  while (in_bounds(next_location)) {
+    res.emplace_back(next_location);
+    next_location = user_defined::pair({
+        next_location.first - horizontal_distance,
+        next_location.second - vertical_distance,
+    });
+  }
+
+  return res;
 }
 
 int main(int argc, const char *argv[]) {
@@ -75,15 +99,15 @@ int main(int argc, const char *argv[]) {
         for (size_t j = i + 1; j < group_antennas.size(); j++) {
           vector<user_defined::pair> possible_locations =
               get_possible_locations(group_antennas[i], group_antennas[j]);
-          debug << "antenna 1: " << group_antennas[i] << endl;
-          debug << "antenna 2: " << group_antennas[j] << endl;
           for (auto &location : possible_locations) {
-            if (in_bounds(location)) {
-              debug << "location: " << location << endl;
-              antinodes.insert(location);
-            }
+            debug << "location: " << location << endl;
+            antinodes.insert(location);
           }
         }
+      }
+      // antennas are also antinodes, add them in
+      for (const auto& antenna : group_antennas) {
+        antinodes.insert(antenna);
       }
     }
 
