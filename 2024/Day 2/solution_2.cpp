@@ -42,21 +42,21 @@ int compare(int x, int y) {
   return 1;
 }
 
-int is_safe(vector<int> &sequence) {
+bool is_safe(vector<int> &sequence) {
   for (size_t i = 0; i < sequence.size() - 1; i++) {
     int current_polarity = compare(sequence[i], sequence[i + 1]);
     if (i > 0) {
       int previous_polarity = compare(sequence[i - 1], sequence[i]);
       if (current_polarity != previous_polarity) {
-        return i;
+        return false;
       }
     }
     int abs_difference = std::abs(sequence[i] - sequence[i + 1]);
     if (abs_difference == 0 || abs_difference > 3) {
-      return i;
+      return false;
     }
   }
-  return -1;
+  return true;
 }
 
 int main() {
@@ -69,8 +69,7 @@ int main() {
     while (getline(test_case, line)) {
       // TODO: figure out a more elegant way to do this
       vector<int> sequence = split(line, " ");
-      int index_to_skip = is_safe(sequence);
-      bool is_safe_report = (index_to_skip == -1);
+      bool is_safe_report = is_safe(sequence);
 
       // found a number that makes it unsafe
       if (!is_safe_report) {
@@ -82,8 +81,7 @@ int main() {
               temp.emplace_back(sequence[i]);
             }
           }
-          int is_safe_2 = is_safe(temp);
-          if (is_safe_2 == -1) {
+          if (is_safe(temp)) {
             is_safe_report = true;
             break;
           }
