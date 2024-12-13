@@ -1,11 +1,18 @@
 #include <iostream>
+#include <string>
+#include <vector>
 namespace user_defined {
 
-struct pair : std::pair<int, int> {
-  pair(int a, int b) : std::pair<int, int>(a, b) {}
+template <typename T>
+struct pair : std::pair<T, T> {
+  pair(T a, T b) : std::pair<T, T>(a, b) {}
 };
-std::ostream &operator<<(std::ostream &stream, pair &pair) {
+template<typename T>
+std::ostream &operator<<(std::ostream &stream, const pair<T> &pair) {
   stream << pair.first << "," << pair.second;
   return stream;
 }
+
+std::vector<std::string> split(std::string s, std::string delimiter);
+std::vector<int> split_int(std::string s, std::string delimiter);
 } // namespace user_defined
