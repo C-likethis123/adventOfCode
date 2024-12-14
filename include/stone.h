@@ -4,9 +4,7 @@
 class Stone {
 public:
   Stone(long x);
-  static std::vector<Stone> transform(Stone &s);
-
-private:
+  static std::vector<long> transform(long s);
   long x;
 };
 #endif // STONE_H

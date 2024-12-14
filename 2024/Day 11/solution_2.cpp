@@ -1,7 +1,5 @@
-
 #include "stone.h"
 #include "user_defined.h"
-#include <pthread.h>
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -13,33 +11,25 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 /*
-time at n = 25:
-./a.out input.txt  0.33s user 0.01s system 37% cpu 0.878 total
+Some observations:
+1. the list will only increase in length if the stones are split. Otherwise, it
+stays the same.
+2. What if I computed the number of times it transformed before it split,
+followed by how much it split to?
 
-if I reused the same objects instead of creating new ones:
-./a.out input.txt  0.22s user 0.00s system 31% cpu 0.707 total
+Looks like i'm not so good at memoisation after all. I tried to do a twisted form of memoisation
+where I stored the number of times a stone stays as 1 before it gets split into 2, but I wasn't very successful.
+The trick is that if there is X amount of stones with the same number and they get split, the total number of stones increases by X. 
+This is much more effective than adding the stones up one by one.
 
+actual memoisation: 
+- ./a.out input.txt  0.01s user 0.00s system 2% cpu 0.294 total
 
-at n = 35:
-./a.out input.txt  14.01s user 0.15s system 97% cpu 14.539 total
-n=35, with std::move:
-./a.out input.txt  14.67s user 0.15s system 96% cpu 15.321 total
-
-
-at n = 75, it got too long that I was witing even after seconds
-
-// try:
-only add if there is a new stone. don't move original stones.
-n = 25
-./a.out input.txt  0.10s user 0.00s system 16% cpu 0.643 total
-n = 35
-./a.out input.txt  6.40s user 0.06s system 93% cpu 6.904 total
-
-// add if there are new stones + multithreading?
 */
 
 using namespace std;
@@ -70,27 +60,35 @@ int main(int argc, const char *argv[]) {
   ofstream debug("output.txt");
   if (test_case.is_open()) {
     getline(test_case, line);
-    vector<Stone> stones;
-    vector<long> temp = split_long(line, " ");
-    for (long t : temp) {
-      stones.emplace_back(t);
+    unordered_map<long, vector<long>> previous;
+    vector<long> stones = split_long(line, " ");
+    unordered_map<long, long> counts;
+    for (auto &x : stones) {
+      counts[x] += 1;
     }
 
-    for (int i = 0; i < 35; i++) {
-      vector<Stone> res;
-      for (Stone &s : stones) {
-        vector<Stone> transformed_stones = Stone::transform(s); 
-        for (Stone &t : transformed_stones) {
-          res.push_back(t);
+    for (int i = 0; i < 25; i++) {
+      unordered_map<long, long> next_counts;
+      for (auto &[stone, count] : counts) {
+        if (previous.count(stone) > 0) {
+          auto &vec = previous[stone];
+          for (const auto &x : vec) {
+            next_counts[x] += count;
+          }
+        } else {
+          vector<long> t = Stone::transform(stone);
+          for (const auto &x : t) {
+            next_counts[x] += count;
+          }
+          previous[stone] = t;
         }
       }
-      for (Stone &x : res) {
-        stones.emplace_back(x);
-      }
+      counts = next_counts;
     }
-    ans = stones.size();
+    for (auto &[stone, count] : counts) {
+        ans += count;
+    }
   }
-
   cout << fixed << ans << endl;
   return 0;
 }
