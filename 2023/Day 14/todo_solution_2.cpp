@@ -16,6 +16,8 @@ problem extension:
 - move rocks in different directions
 - increase number of iterations
 
+observations: some rocks do not move after a few cycles.
+
 */
 using namespace std;
 
