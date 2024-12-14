@@ -9,7 +9,8 @@ fi
 # Variables
 DAY=$1
 FOLDER_NAME="Day $DAY"
-CPP_TEMPLATE='#include <algorithm>
+CPP_TEMPLATE='#include "user_defined.h"
+#include <algorithm>
 #include <bitset>
 #include <climits>
 #include <fstream>
@@ -33,7 +34,7 @@ int main(int argc, const char *argv[]) {
     return -1;
   }
   ifstream test_case(argv[1]);
-  // ofstream debug("output.txt");
+  ofstream debug("output.txt");
   if (test_case.is_open()) {
      getline(test_case, line);
   }
