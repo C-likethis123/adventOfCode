@@ -22,13 +22,15 @@ different paths
  */
 
 using namespace std;
+using pr = user_defined::pair<int>;
+using pair_hash = user_defined::pair_hash<int>;
 
 bool in_bounds(vector<vector<int>> &matrix, int x, int y) {
   return x >= 0 && x < matrix.size() && y >= 0 && y < matrix[0].size();
 }
 
 long compute_trailhead_ratings(vector<vector<int>> &matrix, int i, int j) {
-  vector<std::pair<int, int>> directions({
+  vector<pr> directions({
       {1, 0},  // up
       {0, 1},  // right
       {-1, 0}, // down
@@ -36,9 +38,10 @@ long compute_trailhead_ratings(vector<vector<int>> &matrix, int i, int j) {
   });
   long ans = 0;
 
-  vector<user_defined::pair<int>> queue({user_defined::pair<int>({i, j})});
+  vector<pr> queue({pr({i, j})});
   while (!queue.empty()) {
-    auto [x, y] = queue.front();
+    auto p = queue.front();
+    auto [x, y] = p;
     auto value = matrix[x][y];
 
     if (value == 9) {
@@ -46,14 +49,12 @@ long compute_trailhead_ratings(vector<vector<int>> &matrix, int i, int j) {
     } else {
       // go in all directions
       for (const auto &direction : directions) {
-        int new_x = x + direction.first;
-        int new_y = y + direction.second;
-
+        auto [new_x, new_y] = p + direction;
         // "encountered" set check if in bounds + can traverse ( has to be +1
         // than the current element). then put it inside the queue.
         if (in_bounds(matrix, new_x, new_y)) {
           if ((matrix[new_x][new_y] - value) == 1) {
-            queue.emplace_back(user_defined::pair<int>({new_x, new_y}));
+            queue.emplace_back(pr({new_x, new_y}));
           }
         }
       }
