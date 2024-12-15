@@ -1,3 +1,5 @@
+#include "ud_matrix.h"
+#include "user_defined.h"
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -13,25 +15,21 @@
 #include <vector>
 
 using namespace std;
+using pr = user_defined::pair<int>;
+using pair_hash = user_defined::pair_hash<int>;
+template <typename T> using matrix = user_defined::matrix<T>;
 
-void find_position(const std::vector<std::vector<char>> &matrix, size_t &curr_x,
-                   size_t &curr_y) {
-  size_t row_size = matrix.size();
-  size_t col_size = matrix[0].size();
+pr find_position(const matrix<char> &m) {
+  size_t row_size = m.size();
+  size_t col_size = m[0].size();
   for (size_t i = 0; i < row_size; i++) {
     for (size_t j = 0; j < col_size; j++) {
-      if (matrix[i][j] == '^') {
-        curr_x = i;
-        curr_y = j;
-        return;
+      if (m[i][j] == '^') {
+        return pr({(int)i, (int)j});
       }
     }
   }
-}
-
-inline bool in_bounds(const std::vector<std::vector<char>> &matrix, int x,
-                      int y) {
-  return x >= 0 && x < matrix.size() && y >= 0 && y < matrix[0].size();
+  return pr({-1, -1});
 }
 
 int main(int argc, const char *argv[]) {
@@ -44,42 +42,34 @@ int main(int argc, const char *argv[]) {
   ifstream test_case(argv[1]);
   // ofstream debug("output.txt");
   if (test_case.is_open()) {
-    vector<vector<char>> matrix;
+    matrix<char> m;
     while (getline(test_case, line)) {
       vector<char> row;
       for (char &c : line) {
         row.emplace_back(c);
       }
-      matrix.emplace_back(row);
+      m.emplace_back(row);
     }
-    vector<pair<int, int>> directions({{-1, 0}, {0, 1}, {1, 0}, {0, -1}});
-
-    size_t x = 0;
-    size_t y = 0;
-    find_position(matrix, x, y);
+    vector<pr> directions({{-1, 0}, {0, 1}, {1, 0}, {0, -1}});
 
     // very bad example, don't do this
-    int curr_x = x;
-    int curr_y = y;
-    int curr = 0;
+    pr curr = find_position(m);
+    int curr_dir = 0;
     while (true) {
-      if (matrix[curr_x][curr_y] != 'X') {
+      if (m[curr] != 'X') {
         ans += 1;
-        matrix[curr_x][curr_y] = 'X';
+        m[curr] = 'X';
       }
-      int forward_position_x = curr_x + directions[curr].first;
-      int forward_position_y = curr_y + directions[curr].second;
+      auto forward_pos = curr + directions[curr_dir];
 
-      if (!in_bounds(matrix, forward_position_x, forward_position_y)) {
+      if (!m.in_bounds(forward_pos)) {
         break;
       }
-      while (matrix[forward_position_x][forward_position_y] == '#') {
-        curr = (curr + 1) % 4;
-        forward_position_x = curr_x + directions[curr].first;
-        forward_position_y = curr_y + directions[curr].second;
+      while (m[forward_pos] == '#') {
+        curr_dir = (curr_dir + 1) % 4;
+        forward_pos = curr + directions[curr_dir];
       }
-      curr_x = forward_position_x;
-      curr_y = forward_position_y;
+      curr = forward_pos;
     }
   }
 

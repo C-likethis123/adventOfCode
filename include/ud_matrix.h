@@ -22,7 +22,7 @@ public:
     stream << "]" << std::endl;
     return stream;
   }
-  const K &operator[](const pr &pr) const {
+  K &operator[](const pr &pr) {
     return (*this)[pr.first][pr.second];
   }
 
