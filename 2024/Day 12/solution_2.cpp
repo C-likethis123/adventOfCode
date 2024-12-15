@@ -34,26 +34,28 @@ bool in_bounds(vector<vector<char>> &matrix, int x, int y) {
   return x >= 0 && x < matrix.size() && y >= 0 && y < matrix[0].size();
 }
 
+using pr = user_defined::pair<int>;
+
 template <typename Hash>
 long compute_cost(vector<vector<char>> &matrix,
-                  unordered_set<pair<int, int>, Hash> &encountered, int i,
+                  unordered_set<pr, Hash> &encountered, int i,
                   int j) {
   long area = 0;
   long perimeter = 0;
-  std::vector<pair<int, int>> queue({std::pair<int, int>({i, j})});
-  const std::pair<int, int> UP({1, 0});
-  const std::pair<int, int> RIGHT({0, 1});
-  const std::pair<int, int> LEFT({0, -1});
-  const std::pair<int, int> DOWN({-1, 0});
+  std::vector<pr> queue({pr({i, j})});
+  const pr UP({1, 0});
+  const pr RIGHT({0, 1});
+  const pr LEFT({0, -1});
+  const pr DOWN({-1, 0});
 
-  const std::vector<std::pair<int, int>> directions({
+  const std::vector<pr> directions({
       UP,    // up
       DOWN,  // down
       RIGHT, // right
       LEFT,  // left
   });
 
-  const std::vector<std::vector<std::pair<int, int>>> corners({
+  const std::vector<std::vector<pr>> corners({
       {UP, LEFT},   // top left
       {UP, RIGHT},  // top right
       {DOWN, LEFT}, // bottom left
@@ -61,23 +63,21 @@ long compute_cost(vector<vector<char>> &matrix,
   });
 
   while (!queue.empty()) {
-    auto [x, y] = queue.front();
+    auto p = queue.front();
+    auto [x, y] = p;
     char value = matrix[x][y];
-    if (encountered.count(pair<int, int>({x, y})) == 0) {
-      encountered.insert(pair<int, int>({x, y}));
+    if (encountered.count(p) == 0) {
+      encountered.insert(p);
       area += 1;
       for (auto &direction : directions) {
-        int new_x = x + direction.first;
-        int new_y = y + direction.second;
+        auto [new_x, new_y] = p + direction;
         if (in_bounds(matrix, new_x, new_y) && matrix[new_x][new_y] == value) {
-          queue.emplace_back(pair<int, int>({new_x, new_y}));
+          queue.emplace_back(pr({new_x, new_y}));
         }
       }
       for (auto &corner : corners) {
-        int first_x = x + corner[0].first;
-        int first_y = y + corner[0].second;
-        int second_x = x + corner[1].first;
-        int second_y = y + corner[1].second;
+        auto [first_x, first_y] = p + corner[0];
+        auto [second_x, second_y] = p + corner[1];
         bool has_outer_corner = (!in_bounds(matrix, first_x, first_y) ||
                            matrix[first_x][first_y] != value) &&
                           (!in_bounds(matrix, second_x, second_y) ||
@@ -110,11 +110,11 @@ int main(int argc, const char *argv[]) {
   ofstream debug("output.txt");
   if (test_case.is_open()) {
     vector<vector<char>> matrix;
-    auto hashfn = [&matrix](const std::pair<int, int> &p) {
+    auto hashfn = [&matrix](const pr &p) {
       int size = matrix.size();
       return p.first * size + p.second;
     };
-    unordered_set<pair<int, int>, decltype(hashfn)> encountered(8, hashfn);
+    unordered_set<pr, decltype(hashfn)> encountered(8, hashfn);
     while (getline(test_case, line)) {
       vector<char> row;
       for (char &c : line) {
@@ -125,7 +125,7 @@ int main(int argc, const char *argv[]) {
 
     for (int i = 0; i < matrix.size(); i++) {
       for (int j = 0; j < matrix[0].size(); j++) {
-        if (encountered.count(pair<int, int>({i, j})) == 0) {
+        if (encountered.count(pr({i, j})) == 0) {
           ans += compute_cost(matrix, encountered, i, j);
         }
       }
