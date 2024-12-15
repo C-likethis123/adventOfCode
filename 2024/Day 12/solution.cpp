@@ -14,7 +14,8 @@
 #include <vector>
 
 using namespace std;
-
+using pr = user_defined::pair<int>;
+using pair_hash = user_defined::pair_hash<int>;
 /**
 
 idea:
@@ -36,32 +37,32 @@ bool in_bounds(vector<vector<char>> &matrix, int x, int y) {
   return x >= 0 && x < matrix.size() && y >= 0 && y < matrix[0].size();
 }
 
-
-// TIL: to pass in an unordered set with a custom hash, the best way is to template it.
+// TIL: to pass in an unordered set with a custom hash, the best way is to
+// template it.
 template <typename Hash>
 long compute_cost(vector<vector<char>> &matrix,
-                  unordered_set<pair<int, int>, Hash> &encountered, int i,
+                  unordered_set<pr, Hash> &encountered, int i,
                   int j) {
   long area = 0;
   long perimeter = 0;
-  std::vector<pair<int, int>> queue({std::pair<int, int>({i, j})});
-  const std::vector<std::pair<int, int>> directions({
+  std::vector<pr> queue({pr({i, j})});
+  const std::vector<pr> directions({
       {1, 0},  // up
       {0, 1},  // right
       {-1, 0}, // down
       {0, -1}  // left
   });
   while (!queue.empty()) {
-    auto [x, y] = queue.front();
+    auto p = queue.front();
+    auto [x, y] = p;
     char value = matrix[x][y];
-    if (encountered.count(pair<int, int>({x, y})) == 0) {
-      encountered.insert(pair<int, int>({x, y}));
+    if (encountered.count(p) == 0) {
+      encountered.insert(p);
       area += 1;
       for (auto &direction : directions) {
-        int new_x = x + direction.first;
-        int new_y = y + direction.second;
+        auto [new_x, new_y] = p + direction;
         if (in_bounds(matrix, new_x, new_y) && matrix[new_x][new_y] == value) {
-          queue.emplace_back(pair<int, int>({new_x, new_y}));
+          queue.emplace_back(pr({new_x, new_y}));
         } else {
           perimeter += 1;
         }
@@ -83,11 +84,8 @@ int main(int argc, const char *argv[]) {
   ofstream debug("output.txt");
   if (test_case.is_open()) {
     vector<vector<char>> matrix;
-    auto hashfn = [&matrix](const std::pair<int, int> &p) {
-      int size = matrix.size();
-      return p.first * size + p.second;
-    };
-    unordered_set<pair<int, int>, decltype(hashfn)> encountered(8, hashfn);
+  
+    unordered_set<pr, pair_hash> encountered(8, pair_hash(matrix.size()));
     while (getline(test_case, line)) {
       vector<char> row;
       for (char &c : line) {
@@ -98,7 +96,7 @@ int main(int argc, const char *argv[]) {
 
     for (int i = 0; i < matrix.size(); i++) {
       for (int j = 0; j < matrix[0].size(); j++) {
-        if (encountered.count(pair<int, int>({i, j})) == 0) {
+        if (encountered.count(pr({i, j})) == 0) {
           ans += compute_cost(matrix, encountered, i, j);
         }
       }
