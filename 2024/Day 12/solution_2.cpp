@@ -20,14 +20,15 @@ using namespace std;
 /**
 How to amend the perimeter calculation from part 1?
 - Observe that the total perimeter corresponds to the total number of edges.
-- Outer edge: "protruding edges" - calculated by checking if two perpendicular sides are out of bounds
+- Outer edge: "protruding edges" - calculated by checking if two perpendicular
+sides are out of bounds
 - Inner edges:
 Let's say we have a concave edge like this:
 RX
 ?R
 
-At position X, if there are two items surrounding X (indicated by the two 'R's), but with a missing diagonal (indicated with a ?),
-then we have a concave edge
+At position X, if there are two items surrounding X (indicated by the two 'R's),
+but with a missing diagonal (indicated with a ?), then we have a concave edge
  */
 
 bool in_bounds(vector<vector<char>> &matrix, int x, int y) {
@@ -35,11 +36,11 @@ bool in_bounds(vector<vector<char>> &matrix, int x, int y) {
 }
 
 using pr = user_defined::pair<int>;
+using pair_hash = user_defined::pair_hash<int>;
 
 template <typename Hash>
 long compute_cost(vector<vector<char>> &matrix,
-                  unordered_set<pr, Hash> &encountered, int i,
-                  int j) {
+                  unordered_set<pr, Hash> &encountered, int i, int j) {
   long area = 0;
   long perimeter = 0;
   std::vector<pr> queue({pr({i, j})});
@@ -79,9 +80,9 @@ long compute_cost(vector<vector<char>> &matrix,
         auto [first_x, first_y] = p + corner[0];
         auto [second_x, second_y] = p + corner[1];
         bool has_outer_corner = (!in_bounds(matrix, first_x, first_y) ||
-                           matrix[first_x][first_y] != value) &&
-                          (!in_bounds(matrix, second_x, second_y) ||
-                           matrix[second_x][second_y] != value);
+                                 matrix[first_x][first_y] != value) &&
+                                (!in_bounds(matrix, second_x, second_y) ||
+                                 matrix[second_x][second_y] != value);
         bool has_inner_corner = (in_bounds(matrix, first_x, first_y) &&
                                  matrix[first_x][first_y] == value) &&
                                 (in_bounds(matrix, second_x, second_y) &&
@@ -110,11 +111,6 @@ int main(int argc, const char *argv[]) {
   ofstream debug("output.txt");
   if (test_case.is_open()) {
     vector<vector<char>> matrix;
-    auto hashfn = [&matrix](const pr &p) {
-      int size = matrix.size();
-      return p.first * size + p.second;
-    };
-    unordered_set<pr, decltype(hashfn)> encountered(8, hashfn);
     while (getline(test_case, line)) {
       vector<char> row;
       for (char &c : line) {
@@ -122,6 +118,8 @@ int main(int argc, const char *argv[]) {
       }
       matrix.emplace_back(row);
     }
+    unordered_set<pr, pair_hash> encountered(
+        8, pair_hash(matrix.size()));
 
     for (int i = 0; i < matrix.size(); i++) {
       for (int j = 0; j < matrix[0].size(); j++) {
