@@ -1,3 +1,4 @@
+#include "ud_matrix.h"
 #include "user_defined.h"
 #include <algorithm>
 #include <bitset>
@@ -16,6 +17,7 @@
 using namespace std;
 using pr = user_defined::pair<int>;
 using pair_hash = user_defined::pair_hash<int>;
+template <typename T> using matrix = user_defined::matrix<T>;
 /**
 
 idea:
@@ -33,19 +35,14 @@ it.
 
  */
 
-bool in_bounds(vector<vector<char>> &matrix, int x, int y) {
-  return x >= 0 && x < matrix.size() && y >= 0 && y < matrix[0].size();
-}
-
 // TIL: to pass in an unordered set with a custom hash, the best way is to
 // template it.
-template <typename Hash>
-long compute_cost(vector<vector<char>> &matrix,
-                  unordered_set<pr, Hash> &encountered, int i,
-                  int j) {
+
+long compute_cost(matrix<char> &m, unordered_set<pr, pair_hash> &encountered,
+                  const pr &s) {
   long area = 0;
   long perimeter = 0;
-  std::vector<pr> queue({pr({i, j})});
+  std::vector<pr> queue({s});
   const std::vector<pr> directions({
       {1, 0},  // up
       {0, 1},  // right
@@ -54,15 +51,14 @@ long compute_cost(vector<vector<char>> &matrix,
   });
   while (!queue.empty()) {
     auto p = queue.front();
-    auto [x, y] = p;
-    char value = matrix[x][y];
+    char value = m[p];
     if (encountered.count(p) == 0) {
       encountered.insert(p);
       area += 1;
       for (auto &direction : directions) {
-        auto [new_x, new_y] = p + direction;
-        if (in_bounds(matrix, new_x, new_y) && matrix[new_x][new_y] == value) {
-          queue.emplace_back(pr({new_x, new_y}));
+        auto new_p = p + direction;
+        if (m.in_bounds(new_p) && m[new_p] == value) {
+          queue.emplace_back(new_p);
         } else {
           perimeter += 1;
         }
@@ -83,21 +79,21 @@ int main(int argc, const char *argv[]) {
   ifstream test_case(argv[1]);
   ofstream debug("output.txt");
   if (test_case.is_open()) {
-    vector<vector<char>> matrix;
-  
-    unordered_set<pr, pair_hash> encountered(8, pair_hash(matrix.size()));
+    matrix<char> m;
+
+    unordered_set<pr, pair_hash> encountered(8, pair_hash(m.size()));
     while (getline(test_case, line)) {
       vector<char> row;
       for (char &c : line) {
         row.emplace_back(c);
       }
-      matrix.emplace_back(row);
+      m.emplace_back(row);
     }
 
-    for (int i = 0; i < matrix.size(); i++) {
-      for (int j = 0; j < matrix[0].size(); j++) {
+    for (int i = 0; i < m.size(); i++) {
+      for (int j = 0; j < m[0].size(); j++) {
         if (encountered.count(pr({i, j})) == 0) {
-          ans += compute_cost(matrix, encountered, i, j);
+          ans += compute_cost(m, encountered, pr({i, j}));
         }
       }
     }

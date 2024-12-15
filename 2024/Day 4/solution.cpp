@@ -1,3 +1,5 @@
+#include "ud_matrix.h"
+#include "user_defined.h"
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -26,28 +28,28 @@ diagonal: 10
 
 */
 #define N 140
-
+using pr = user_defined::pair<int>;
+using pair_hash = user_defined::pair_hash<int>;
+template <typename T> using matrix = user_defined::matrix<T>;
 using namespace std;
-
-bool in_bounds(int x, int y) { return x >= 0 && x < 140 && y >= 0 && y < 140; }
 
 int main() {
   long ans = 0;
   string line;
   ifstream test_case("input.txt");
-  vector<vector<char>> matrix;
+  matrix<char> m;
   // ofstream debug("output.txt");
 
-  vector<std::pair<int, int>> directions(
+  vector<pr> directions(
       {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}});
   std::array<char, 4> words({'X', 'M', 'A', 'S'});
   if (test_case.is_open()) {
     while (getline(test_case, line)) {
-      vector<char> row(N);
+      vector<char> row;
       for (int i = 0; i < N; i++) {
-        row[i] = line[i];
+        row.emplace_back(line[i]);
       }
-      matrix.emplace_back(row);
+      m.emplace_back(row);
     }
 
     // do something here
@@ -55,13 +57,11 @@ int main() {
       for (int j = 0; j < N; j++) {
         // go into all 8 directions
         for (auto &direction : directions) {
-          int x = i;
-          int y = j;
+          pr curr_pt({i, j});
           int curr = 0;
           // check if I can find 'XMAS'
-          while (curr < 4 && in_bounds(x, y) && matrix[x][y] == words[curr]) {
-            x += direction.first;
-            y += direction.second;
+          while (curr < 4 && m.in_bounds(curr_pt) && m[curr_pt] == words[curr]) {
+            curr_pt += direction;
             curr += 1;
           }
 

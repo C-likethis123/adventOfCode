@@ -1,3 +1,5 @@
+#ifndef UD_PAIR_H
+#define UD_PAIR_H
 #include <iostream>
 #include <string>
 #include <vector>
@@ -15,6 +17,12 @@ public:
   friend pair<T> operator+(const pair<T> &lhs, const pair<T> &pair1) {
     return pair<T>({lhs.first + pair1.first, lhs.second + pair1.second});
   }
+
+  friend pair<T> operator+=(pair<T>& lhs, const pair<T> added_pair) {
+    lhs.first += added_pair.first;
+    lhs.second += added_pair.second;
+    return lhs;
+  }
 };
 
 template <typename T> struct pair_hash {
@@ -30,3 +38,5 @@ template <typename T> struct pair_hash {
 std::vector<std::string> split(std::string s, std::string delimiter);
 std::vector<int> split_int(std::string s, std::string delimiter);
 } // namespace user_defined
+
+#endif // UD_PAIR_H

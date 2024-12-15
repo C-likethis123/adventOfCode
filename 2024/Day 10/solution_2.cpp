@@ -1,4 +1,5 @@
 #include "user_defined.h"
+#include "ud_matrix.h"
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -24,12 +25,10 @@ different paths
 using namespace std;
 using pr = user_defined::pair<int>;
 using pair_hash = user_defined::pair_hash<int>;
+template <typename T>
+using matrix = user_defined::matrix<T>;
 
-bool in_bounds(vector<vector<int>> &matrix, int x, int y) {
-  return x >= 0 && x < matrix.size() && y >= 0 && y < matrix[0].size();
-}
-
-long compute_trailhead_ratings(vector<vector<int>> &matrix, int i, int j) {
+long compute_trailhead_ratings(matrix<int> &m, const pr& start) {
   vector<pr> directions({
       {1, 0},  // up
       {0, 1},  // right
@@ -38,23 +37,22 @@ long compute_trailhead_ratings(vector<vector<int>> &matrix, int i, int j) {
   });
   long ans = 0;
 
-  vector<pr> queue({pr({i, j})});
+  vector<pr> queue({start});
   while (!queue.empty()) {
     auto p = queue.front();
-    auto [x, y] = p;
-    auto value = matrix[x][y];
+    auto value = m[p];
 
     if (value == 9) {
       ans += 1;
     } else {
       // go in all directions
       for (const auto &direction : directions) {
-        auto [new_x, new_y] = p + direction;
+        auto new_p = p + direction;
         // "encountered" set check if in bounds + can traverse ( has to be +1
         // than the current element). then put it inside the queue.
-        if (in_bounds(matrix, new_x, new_y)) {
-          if ((matrix[new_x][new_y] - value) == 1) {
-            queue.emplace_back(pr({new_x, new_y}));
+        if (m.in_bounds(new_p)) {
+          if ((m[new_p] - value) == 1) {
+            queue.emplace_back(new_p);
           }
         }
       }
@@ -75,18 +73,18 @@ int main(int argc, const char *argv[]) {
   ifstream test_case(argv[1]);
   // ofstream debug("output.txt");
   if (test_case.is_open()) {
-    vector<vector<int>> matrix;
+    matrix<int> m;
     while (getline(test_case, line)) {
       vector<int> row;
       for (char &c : line) {
         row.emplace_back(c - '0');
       }
-      matrix.emplace_back(row);
+      m.emplace_back(row);
     }
-    for (int i = 0; i < matrix.size(); i++) {
-      for (int j = 0; j < matrix.size(); j++) {
-        if (matrix[i][j] == 0) {
-          ans += compute_trailhead_ratings(matrix, i, j);
+    for (int i = 0; i < m.size(); i++) {
+      for (int j = 0; j < m.size(); j++) {
+        if (m[i][j] == 0) {
+          ans += compute_trailhead_ratings(m, pr({i, j}));
         }
       }
     }
