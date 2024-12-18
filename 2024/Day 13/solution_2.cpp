@@ -61,11 +61,11 @@ int main(int argc, const char *argv[]) {
       long long factor = buttonAPresses.first * buttonBPresses.second -
                          buttonAPresses.second * buttonBPresses.first;
       long long total = Y * buttonAPresses.first - X * buttonAPresses.second;
-      if (abs(total) >= abs(factor) && total % factor == 0) {
+      if (total % factor == 0) {
         // possible, so figure out the coins I need
         long long b = total / factor;
         long long totalA = (X - buttonBPresses.first * b);
-        if (abs(totalA) >= abs(buttonAPresses.first) && totalA % buttonAPresses.first == 0) {
+        if (totalA % buttonAPresses.first == 0) {
           long long a = totalA / buttonAPresses.first;
           if (a >= 0 && b >= 0) {
             ans += a * 3 + b;
