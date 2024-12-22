@@ -10,6 +10,7 @@ fi
 DAY=$1
 FOLDER_NAME="Day $DAY"
 CPP_TEMPLATE='#include "user_defined.h"
+#include "ud_matrix.h"
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -25,6 +26,11 @@ CPP_TEMPLATE='#include "user_defined.h"
 #include <vector>
 
 using namespace std;
+using pr = user_defined::pair<int>;
+using pair_hash = user_defined::pair_hash<int>;
+
+template <typename T>
+using matrix = user_defined::matrix<T>;
 
 int main(int argc, const char *argv[]) {
   long ans = 0;

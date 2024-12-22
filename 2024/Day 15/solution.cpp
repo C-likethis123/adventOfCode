@@ -66,25 +66,17 @@ int main(int argc, const char *argv[]) {
       }
       m.emplace_back(row);
     }
+    unordered_map<char, pr> directions({
+      {'>', pr({0, 1})},
+      {'^', pr({-1, 0})},
+      {'v', pr({1, 0})},
+      {'<', pr({0, -1})}
+    });
     pr start = find_starting_position(m);
     while (getline(test_case, line)) {
 
-      for (char &move : line) {
-
-        pr direction({0, 0});
-        switch (move) {
-        case '>':
-          direction = pr({0, 1});
-          break;
-        case '^':
-          direction = pr({-1, 0});
-          break;
-        case 'v':
-          direction = pr({1, 0});
-          break;
-        default:
-          direction = pr({0, -1});
-        }
+      for (char move : line) {
+        pr& direction = directions[move];
         pr current = start;
         current += direction;
         while (m[current] != '.' && m[current] != '#') {

@@ -8,6 +8,8 @@ namespace user_defined {
 // Custom hash functor
 template <typename T> class pair : public std::pair<T, T> {
 public:
+  // default constructor so I can use it in an unordered_map
+  pair() : std::pair<T, T>(T{}, T{}) {}
   pair(T a, T b) : std::pair<T, T>(a, b) {}
 
   friend std::ostream &operator<<(std::ostream &stream, const pair<T> &pair) {
@@ -22,6 +24,24 @@ public:
     lhs.first += added_pair.first;
     lhs.second += added_pair.second;
     return lhs;
+  }
+
+  friend pair<T> operator-(const pair<T> &lhs, const pair<T> &pair1) {
+    return pair<T>({lhs.first - pair1.first, lhs.second - pair1.second});
+  }
+
+  friend pair<T> operator-=(pair<T>& lhs, const pair<T> subtracted_pair) {
+    lhs.first -= subtracted_pair.first;
+    lhs.second -= subtracted_pair.second;
+    return lhs;
+  }
+
+  friend constexpr bool operator==(const pair<T>& lhs, const pair<T>& rhs) {
+    return lhs.first == rhs.first && lhs.second == rhs.second;
+  }
+
+  friend constexpr bool operator!=(const pair<T>& lhs, const pair<T>& rhs) {
+    return !(lhs == rhs);
   }
 };
 
