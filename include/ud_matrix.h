@@ -1,6 +1,8 @@
 #ifndef UD_MATRIX_H
 #define UD_MATRIX_H
 #include "user_defined.h"
+#include <iterator>
+#include <experimental/iterator>
 #include <vector>
 namespace user_defined {
 
@@ -11,12 +13,10 @@ public:
 
   friend std::ostream &operator<<(std::ostream &stream,
                                   const matrix<K> &matrix) {
-    stream << "matrix[";
+    stream << "matrix[" << std::endl;
     for (const auto &row : matrix) {
       stream << "[";
-      for (const auto &item : row) {
-        stream << item << ", ";
-      }
+      std::copy(std::begin(row), std::end(row), std::experimental::make_ostream_joiner(stream, ", "));
       stream << "]," << std::endl;
     }
     stream << "]" << std::endl;
