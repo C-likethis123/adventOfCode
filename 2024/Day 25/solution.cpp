@@ -21,29 +21,6 @@ using pair_hash = user_defined::pair_hash<int>;
 template <typename T>
 using matrix = user_defined::matrix<T>;
 
-/**
-
-- try finding the shortest sequence for one robot
-  observation: if those two points make up a "rectangle", traverse through the rectangle, it will always be the shortest. so i don't need the actual sequence.
-  - ok maybe I need the sequence because my next sequence needs it.
-
-- need to store the state of all the robots.
-- then increment.
-
-How many robots needed:
-- numerical keypad
-- directional keyboard
-- directional keyboard
-- i control the last directional keypad
-
-all robots initially aim at the keypad's A key.
-
-in order to press 0 first:
-1) <A
-2) <: left, down, left. then press A. then control it to go to A, then press A.
-3) same to go to the left, then press A....
-4) same for me.
- */
 int main(int argc, const char *argv[]) {
   long ans = 0;
   string line;
