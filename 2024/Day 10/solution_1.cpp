@@ -1,15 +1,7 @@
-#include "user_defined.h"
 #include "ud_matrix.h"
-#include <algorithm>
-#include <bitset>
-#include <climits>
+#include "user_defined.h"
 #include <fstream>
 #include <iostream>
-#include <iterator>
-#include <numeric>
-#include <queue>
-#include <regex>
-#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -33,21 +25,19 @@ using namespace std;
 using pr = user_defined::pair<int>;
 using pair_hash = user_defined::pair_hash<int>;
 
-template <typename T>
-using matrix = user_defined::matrix<T>;
+template <typename T> using matrix = user_defined::matrix<T>;
 
-long compute_trailhead_score(matrix<int> &m, pr& s) {
+const vector<pr> directions({
+    {1, 0},  // up
+    {0, 1},  // right
+    {-1, 0}, // down
+    {0, -1}  // left
+});
+long compute_trailhead_score(matrix<int> &m, pr &s) {
   // put encountered trailheads here
-  unordered_set<pr, pair_hash> encountered(8, pair_hash(m.size()));
+  unordered_set<pr, pair_hash> encountered(8, pair_hash{});
+  deque<pr> queue({s});
 
-  vector<pr> directions({
-      {1, 0},  // up
-      {0, 1},  // right
-      {-1, 0}, // down
-      {0, -1}  // left
-  });
-
-  vector<pr> queue({s});
   while (!queue.empty()) {
     auto p = queue.front();
     auto value = m[p];
@@ -69,7 +59,7 @@ long compute_trailhead_score(matrix<int> &m, pr& s) {
       }
     }
     // pop front element
-    queue.erase(queue.begin());
+    queue.pop_front();
   }
   return encountered.size();
 }

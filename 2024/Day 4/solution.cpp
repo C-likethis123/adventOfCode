@@ -1,17 +1,8 @@
 #include "ud_matrix.h"
 #include "user_defined.h"
-#include <algorithm>
-#include <bitset>
-#include <climits>
 #include <fstream>
 #include <iostream>
-#include <iterator>
-#include <numeric>
-#include <queue>
-#include <regex>
-#include <sstream>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 /**
@@ -25,7 +16,6 @@ brute force:
 horizontal: 5
 vertical: 3
 diagonal: 10
-
 */
 #define N 140
 using pr = user_defined::pair<int>;
@@ -42,25 +32,23 @@ int main() {
 
   vector<pr> directions(
       {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}});
-  std::array<char, 4> words({'X', 'M', 'A', 'S'});
+  constexpr std::array<char, 4> words({'X', 'M', 'A', 'S'});
   if (test_case.is_open()) {
     while (getline(test_case, line)) {
-      vector<char> row;
-      for (int i = 0; i < N; i++) {
-        row.emplace_back(line[i]);
-      }
-      m.emplace_back(row);
+      // creates a vector<char> from a string and constructs it inplace
+      m.emplace_back(line.begin(), line.end());
     }
 
     // do something here
     for (int i = 0; i < N; i++) {
       for (int j = 0; j < N; j++) {
         // go into all 8 directions
-        for (auto &direction : directions) {
+        for (const auto &direction : directions) {
           pr curr_pt({i, j});
           int curr = 0;
           // check if I can find 'XMAS'
-          while (curr < 4 && m.in_bounds(curr_pt) && m[curr_pt] == words[curr]) {
+          while (curr < 4 && m.in_bounds(curr_pt) &&
+                 m[curr_pt] == words[curr]) {
             curr_pt += direction;
             curr += 1;
           }

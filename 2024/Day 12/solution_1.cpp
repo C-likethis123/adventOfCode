@@ -37,18 +37,18 @@ it.
 
 // TIL: to pass in an unordered set with a custom hash, the best way is to
 // template it.
+const std::vector<pr> directions({
+    {1, 0},  // up
+    {0, 1},  // right
+    {-1, 0}, // down
+    {0, -1}  // left
+});
 
 long compute_cost(matrix<char> &m, unordered_set<pr, pair_hash> &encountered,
                   const pr &s) {
   long area = 0;
   long perimeter = 0;
   std::vector<pr> queue({s});
-  const std::vector<pr> directions({
-      {1, 0},  // up
-      {0, 1},  // right
-      {-1, 0}, // down
-      {0, -1}  // left
-  });
   while (!queue.empty()) {
     auto p = queue.front();
     char value = m[p];
@@ -81,19 +81,16 @@ int main(int argc, const char *argv[]) {
   if (test_case.is_open()) {
     matrix<char> m;
 
-    unordered_set<pr, pair_hash> encountered(8, pair_hash(m.size()));
+    unordered_set<pr, pair_hash> encountered(8, pair_hash{});
     while (getline(test_case, line)) {
-      vector<char> row;
-      for (char &c : line) {
-        row.emplace_back(c);
-      }
-      m.emplace_back(row);
+      m.emplace_back(line.begin(), line.end());
     }
 
     for (int i = 0; i < m.size(); i++) {
       for (int j = 0; j < m[0].size(); j++) {
-        if (encountered.count(pr({i, j})) == 0) {
-          ans += compute_cost(m, encountered, pr({i, j}));
+        pr pair = {i, j};
+        if (encountered.count(pair) == 0) {
+          ans += compute_cost(m, encountered, pair);
         }
       }
     }

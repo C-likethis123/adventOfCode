@@ -1,14 +1,6 @@
-#include <algorithm>
-#include <bitset>
-#include <climits>
-#include <cstring>
+#include "user_defined.h"
 #include <fstream>
 #include <iostream>
-#include <iterator>
-#include <numeric>
-#include <queue>
-#include <regex>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -27,21 +19,6 @@ item and add it to a set.
 - time complexity: O(n), where n is the forbidden list length
 */
 
-std::vector<int> split(string s, string delimiter) {
-  size_t pos = 0;
-  std::string token;
-  std::vector<int> v;
-  while ((pos = s.find(delimiter)) != std::string::npos) {
-    token = s.substr(0, pos);
-    if (!token.empty()) {
-      v.push_back(stoi(token));
-    }
-    s.erase(0, pos + delimiter.length());
-  }
-  v.push_back(stoi(s));
-  return v;
-}
-
 int main() {
   long ans = 0;
   string line;
@@ -51,12 +28,12 @@ int main() {
     // get section ordering rules
     unordered_map<int, unordered_set<int>> orderings;
     while (getline(test_case, line) && !line.empty()) {
-      vector<int> ordering = split(line, "|");
+      vector<int> ordering = user_defined::split_int(line, "|");
       orderings[ordering[1]].insert(ordering[0]);
     }
 
     while (getline(test_case, line)) {
-      vector<int> numbers = split(line, ",");
+      vector<int> numbers = user_defined::split_int(line, ",");
       unordered_set<int> forbidden;
       bool is_safe = true;
       for (int num : numbers) {
@@ -64,7 +41,8 @@ int main() {
           is_safe = false;
           break;
         }
-        // using .merge method does not work because it will splice orderings[num]
+        // using .merge method does not work because it will splice
+        // orderings[num]
         auto &set_to_merge = orderings[num];
         for (auto &item : set_to_merge) {
 

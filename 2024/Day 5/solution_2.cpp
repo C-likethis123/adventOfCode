@@ -1,15 +1,7 @@
+#include "user_defined.h"
 #include <algorithm>
-#include <bitset>
-#include <climits>
-#include <cstring>
 #include <fstream>
 #include <iostream>
-#include <iterator>
-#include <list>
-#include <numeric>
-#include <queue>
-#include <regex>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -46,21 +38,6 @@ other ppl's answers:
 1. it sorts every list, then deduct it by part 1's answers
 */
 
-std::vector<int> split(string s, string delimiter) {
-  size_t pos = 0;
-  std::string token;
-  std::vector<int> v;
-  while ((pos = s.find(delimiter)) != std::string::npos) {
-    token = s.substr(0, pos);
-    if (!token.empty()) {
-      v.push_back(stoi(token));
-    }
-    s.erase(0, pos + delimiter.length());
-  }
-  v.push_back(stoi(s));
-  return v;
-}
-
 int main() {
   long ans = 0;
   string line;
@@ -70,19 +47,17 @@ int main() {
     // get section ordering rules
     unordered_map<int, unordered_set<int>> orderings;
     while (getline(test_case, line) && !line.empty()) {
-      vector<int> ordering = split(line, "|");
+      vector<int> ordering = user_defined::split_int(line, "|");
       orderings[ordering[1]].insert(ordering[0]);
     }
 
     while (getline(test_case, line)) {
-      vector<int> numbers = split(line, ",");
+      vector<int> numbers = user_defined::split_int(line, ",");
       unordered_set<int> forbidden;
-      bool is_safe = true;
-      std::list<int> in_order_list;
-      for (size_t i = 0; i < numbers.size(); i++) {
-        int num = numbers[i];
+      bool is_unsafe = false;
+      for (int num : numbers) {
         if (forbidden.count(num)) {
-          is_safe = false;
+          is_unsafe = true;
           break;
         }
         // using .merge method does not work because it will splice
@@ -93,11 +68,17 @@ int main() {
         }
       }
 
-      if (!is_safe) {
-        // sort it to get the ordered list - sorting works but my custom bubble sort doesn't. weird
-        std::sort(numbers.begin(), numbers.end(), [&orderings](const int& v1, const int v2) {
-          return (orderings[v2]).count(v1) > 0;
-        });
+      if (is_unsafe) {
+        // sort it to get the ordered list - sorting works but my custom bubble
+        // sort doesn't. weird
+        std::sort(numbers.begin(), numbers.end(),
+                  [&orderings](const int &v1, const int v2) {
+                    auto it = orderings.find(v2);
+                    if (it == orderings.end()) {
+                      return false;
+                    }
+                    return it->second.count(v1) > 0;
+                  });
         ans += numbers[numbers.size() / 2];
       }
     }

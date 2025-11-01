@@ -1,118 +1,111 @@
-#include <algorithm>
-#include <bitset>
-#include <climits>
+#include "ud_matrix.h"
+#include "user_defined.h"
 #include <fstream>
 #include <iostream>
-#include <iterator>
-#include <numeric>
-#include <queue>
-#include <regex>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 using namespace std;
+using pr = user_defined::pair<int>;
+template <typename T> using matrix = user_defined::matrix<T>;
 
-void find_position(const std::vector<std::vector<char>> &matrix, size_t &curr_x,
-                   size_t &curr_y) {
-  size_t row_size = matrix.size();
-  size_t col_size = matrix[0].size();
-  for (size_t i = 0; i < row_size; i++) {
-    for (size_t j = 0; j < col_size; j++) {
-      if (matrix[i][j] == '^') {
-        curr_x = i;
-        curr_y = j;
-        return;
-      }
+const std::vector<pr> directions = {{0, 1}, {-1, 0}, {1, 0}, {0, -1}};
+
+pr find_position(const matrix<char> &m) {
+  for (size_t i = 0; i < m.size(); i++) {
+    for (size_t j = 0; j < m[0].size(); j++) {
+      if (m[i][j] == '^')
+        return pr{(int)i, (int)j};
     }
   }
+  return pr{-1, -1};
 }
 
-inline bool in_bounds(const std::vector<std::vector<char>> &matrix, int x,
-                      int y) {
-  return x >= 0 && x < matrix.size() && y >= 0 && y < matrix[0].size();
-}
-
-/**
-
-part 2: get the guard stuck in a loop by adding a single new obstruction.
-
-1. brute force:
-- iterate through all positions and place the obstacles
-- go through one round until I meet an encountered obstacle at the same
-direction.
- */
 typedef int direction;
 typedef int flattened_index;
+
 int main(int argc, const char *argv[]) {
   if (argc < 2) {
     cerr << "supply a file name";
     return -1;
   }
+
   long ans = 0;
   string line;
   ifstream test_case(argv[1]);
-  // ofstream debug("output.txt");
-  if (test_case.is_open()) {
-    vector<vector<char>> matrix;
-    while (getline(test_case, line)) {
-      vector<char> row;
-      for (char &c : line) {
-        row.emplace_back(c);
-      }
-      matrix.emplace_back(row);
+
+  if (!test_case.is_open()) {
+    cerr << "cannot open file\n";
+    return -1;
+  }
+
+  matrix<char> m;
+  while (getline(test_case, line)) {
+    m.emplace_back(line.begin(), line.end());
+  }
+
+  pr original_pos = find_position(m);
+  unordered_set<pr, user_defined::pair_hash<int>> visited_cells;
+
+  // Compute original path
+  {
+    pr curr_pos = original_pos;
+    int curr_dir = 0;
+    while (true) {
+      if (!m.in_bounds(curr_pos))
+        break;
+      visited_cells.insert(curr_pos);
+
+      pr next_pos = curr_pos + directions[curr_dir];
+      if (!m.in_bounds(next_pos))
+        break;
+
+      if (m[next_pos] == '#')
+        curr_dir = (curr_dir + 1) % 4;
+      else
+        curr_pos = next_pos;
     }
-    vector<pair<int, int>> directions({{-1, 0}, {0, 1}, {1, 0}, {0, -1}});
+  }
 
-    size_t x = 0;
-    size_t y = 0;
-    find_position(matrix, x, y);
+  // Test only visited cells
+  for (const auto &pos : visited_cells) {
+    if (m[pos] == '#' || m[pos] == '^')
+      continue;
 
-    // very bad example, don't do this
-    for (size_t pos_x = 0; pos_x < matrix.size(); pos_x++) {
-      for (size_t pos_y = 0; pos_y < matrix.size(); pos_y++) {
-        if (matrix[pos_x][pos_y] == '#' || matrix[pos_x][pos_y] == '^') {
-          continue;
-        }
-        int curr_x = x;
-        int curr_y = y;
-        int curr = 0;
-        matrix[pos_x][pos_y] = 'O';
-        unordered_map<flattened_index, unordered_set<direction>> encountered;
-        bool is_stuck = true;
-        while (true) {
-          if (matrix[curr_x][curr_y] != 'X') {
-            matrix[curr_x][curr_y] = 'X';
-          }
-          if (encountered[curr_x * matrix.size() + curr_y].count(curr)) {
-            break;
-          }
-          encountered[curr_x * matrix.size() + curr_y].insert(curr);
-          int forward_position_x = curr_x + directions[curr].first;
-          int forward_position_y = curr_y + directions[curr].second;
+    char old = m[pos];
+    m[pos] = 'O';
 
-          if (!in_bounds(matrix, forward_position_x, forward_position_y)) {
-            is_stuck = false;
-            break;
-          }
-          while (matrix[forward_position_x][forward_position_y] == '#' ||
-                 matrix[forward_position_x][forward_position_y] == 'O') {
-            curr = (curr + 1) % 4;
-            forward_position_x = curr_x + directions[curr].first;
-            forward_position_y = curr_y + directions[curr].second;
-          }
-          curr_x = forward_position_x;
-          curr_y = forward_position_y;
-        }
+    bool is_stuck = false;
+    pr curr_pos = original_pos;
+    int curr_dir = 0;
+    unordered_map<flattened_index, unordered_set<direction>> encountered;
 
-        matrix[pos_x][pos_y] = 'X';
-        if (is_stuck) {
-          ans += 1;
-        }
+    while (true) {
+      flattened_index key = curr_pos.first * m[0].size() + curr_pos.second;
+      if (encountered[key].count(curr_dir)) {
+        is_stuck = true;
+        break;
       }
+      encountered[key].insert(curr_dir);
+
+      pr forward_position = curr_pos + directions[curr_dir];
+      while (m.in_bounds(forward_position) &&
+             (m[forward_position] == '#' || m[forward_position] == 'O')) {
+        curr_dir = (curr_dir + 1) % 4;
+        forward_position = curr_pos + directions[curr_dir];
+      }
+
+      if (!m.in_bounds(forward_position))
+        break;
+      curr_pos = forward_position;
     }
+
+    if (is_stuck)
+      ans++;
+
+    m[pos] = old;
   }
 
   cout << fixed << ans << endl;

@@ -4,6 +4,7 @@
 #include <bitset>
 #include <climits>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <map>
@@ -82,12 +83,15 @@ int main(int argc, const char *argv[]) {
                                         {'^', pr({-1, 0})},
                                         {'v', pr({1, 0})},
                                         {'<', pr({0, -1})}});
+    // dk box side
     unordered_map<char, pr> box_side({{']', pr({0, -1})}, {'[', pr({0, 1})}});
     pr start = find_starting_position(m);
     while (getline(test_case, line)) {
 
       for (char move : line) {
-        pr &direction = directions[move];
+        pr direction = directions[move];
+        // when moved horizontally, the boxes will only
+        // move other boxes indirectly if the boxes are in the same row
         if (move == '>' || move == '<') {
           pr current = start;
           current += direction;
@@ -109,10 +113,11 @@ int main(int argc, const char *argv[]) {
             start += direction;
           }
           // different vertically
+          // I can push the box from the top left or top right side
         } else {
           pr current = start + direction;
           vector<pr> queue({current});
-          unordered_set<pr, pair_hash> encountered(8, pair_hash(m.size()));
+          unordered_set<pr, pair_hash> encountered(8, pair_hash{});
           bool can_shift = true;
           while (!queue.empty()) {
             auto pos = queue.front();
@@ -140,9 +145,9 @@ int main(int argc, const char *argv[]) {
 
             std::function<bool(int, int)> comparator;
             if (move == '^') {
-              comparator = std::greater<int>();
-            } else {
               comparator = std::less<int>();
+            } else {
+              comparator = std::greater<int>();
             }
             map<int, unordered_set<int>, std::function<bool(int, int)>>
                 orderings(comparator);

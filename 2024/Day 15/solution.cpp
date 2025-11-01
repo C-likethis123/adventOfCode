@@ -1,18 +1,9 @@
 #include "ud_matrix.h"
 #include "user_defined.h"
-#include <algorithm>
-#include <bitset>
-#include <climits>
 #include <fstream>
 #include <iostream>
-#include <iterator>
-#include <numeric>
-#include <queue>
-#include <regex>
-#include <sstream>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -66,17 +57,15 @@ int main(int argc, const char *argv[]) {
       }
       m.emplace_back(row);
     }
-    unordered_map<char, pr> directions({
-      {'>', pr({0, 1})},
-      {'^', pr({-1, 0})},
-      {'v', pr({1, 0})},
-      {'<', pr({0, -1})}
-    });
+    unordered_map<char, pr> directions({{'>', pr({0, 1})},
+                                        {'^', pr({-1, 0})},
+                                        {'v', pr({1, 0})},
+                                        {'<', pr({0, -1})}});
     pr start = find_starting_position(m);
     while (getline(test_case, line)) {
 
       for (char move : line) {
-        pr& direction = directions[move];
+        pr &direction = directions[move];
         pr current = start;
         current += direction;
         while (m[current] != '.' && m[current] != '#') {

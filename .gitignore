@@ -1,2 +1,19 @@
 **/*.txt
 a.out
+
+# CMake build directories and files
+build/
+**/build/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+*.a
+*.so
+*.dylib
+
+# CMake executables (day*_part* pattern)
+**/day*_part*
+!**/day*_part*.cpp

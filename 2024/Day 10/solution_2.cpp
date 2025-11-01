@@ -1,5 +1,5 @@
-#include "user_defined.h"
 #include "ud_matrix.h"
+#include "user_defined.h"
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -25,16 +25,16 @@ different paths
 using namespace std;
 using pr = user_defined::pair<int>;
 using pair_hash = user_defined::pair_hash<int>;
-template <typename T>
-using matrix = user_defined::matrix<T>;
+template <typename T> using matrix = user_defined::matrix<T>;
 
-long compute_trailhead_ratings(matrix<int> &m, const pr& start) {
-  vector<pr> directions({
-      {1, 0},  // up
-      {0, 1},  // right
-      {-1, 0}, // down
-      {0, -1}  // left
-  });
+const vector<pr> directions({
+    {1, 0},  // up
+    {0, 1},  // right
+    {-1, 0}, // down
+    {0, -1}  // left
+});
+long compute_trailhead_ratings(matrix<int> &m, const pr &start) {
+
   long ans = 0;
 
   vector<pr> queue({start});

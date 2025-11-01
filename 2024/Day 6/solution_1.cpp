@@ -1,23 +1,15 @@
 #include "ud_matrix.h"
 #include "user_defined.h"
-#include <algorithm>
-#include <bitset>
-#include <climits>
 #include <fstream>
 #include <iostream>
-#include <iterator>
-#include <numeric>
-#include <queue>
-#include <regex>
-#include <sstream>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 using namespace std;
 using pr = user_defined::pair<int>;
-using pair_hash = user_defined::pair_hash<int>;
 template <typename T> using matrix = user_defined::matrix<T>;
+
+const vector<pr> directions({{-1, 0}, {0, 1}, {1, 0}, {0, -1}});
 
 pr find_position(const matrix<char> &m) {
   size_t row_size = m.size();
@@ -44,13 +36,8 @@ int main(int argc, const char *argv[]) {
   if (test_case.is_open()) {
     matrix<char> m;
     while (getline(test_case, line)) {
-      vector<char> row;
-      for (char &c : line) {
-        row.emplace_back(c);
-      }
-      m.emplace_back(row);
+      m.emplace_back(line.begin(), line.end());
     }
-    vector<pr> directions({{-1, 0}, {0, 1}, {1, 0}, {0, -1}});
 
     // very bad example, don't do this
     pr curr = find_position(m);

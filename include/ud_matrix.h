@@ -34,7 +34,7 @@ public:
     return std::vector<std::vector<K>>::operator[](index);
   }
 
-  bool in_bounds(const pr &p) {
+  inline bool in_bounds(const pr &p) {
     return p.first >= 0 && p.first < (*this).size() && p.second >= 0 &&
            p.second < (*this)[0].size();
   }
@@ -53,8 +53,6 @@ public:
   }
 };
 
-// common direction utils
-std::vector<pr> directions({pr({0, 1}), pr({-1, 0}), pr({1, 0}), pr({0, -1})});
 } // namespace user_defined
 
 #endif // UD_MATRIX_H

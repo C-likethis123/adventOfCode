@@ -28,7 +28,8 @@ template <typename T> using matrix = user_defined::matrix<T>;
 
 using namespace std;
 
-bool is_valid_diagonal(matrix<char> &m, const pr &first, const pr &second) {
+inline bool is_valid_diagonal(matrix<char> &m, const pr &first,
+                              const pr &second) {
   return m.in_bounds(first) && m.in_bounds(second) &&
          ((m[first] == 'S' && m[second] == 'M') ||
           (m[first] == 'M' && m[second] == 'S'));
@@ -44,11 +45,7 @@ int main() {
   if (test_case.is_open()) {
     for (int r = 0; r < N; r++) {
       getline(test_case, line);
-      vector<char> row;
-      for (int i = 0; i < N; i++) {
-        row.emplace_back(line[i]);
-      }
-      m.emplace_back(row);
+      m.emplace_back(line.begin(), line.end());
     }
 
     // do something here
@@ -61,7 +58,9 @@ int main() {
               is_valid_diagonal(m, pr({i - 1, j - 1}), pr({i + 1, j + 1}));
           bool is_valid_right_diagonal =
               is_valid_diagonal(m, pr({i - 1, j + 1}), pr({i + 1, j - 1}));
-          ans += is_valid_left_diagonal && is_valid_right_diagonal;
+          if (is_valid_left_diagonal && is_valid_right_diagonal) {
+            ans += 1;
+          }
         }
       }
     }

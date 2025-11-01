@@ -1,7 +1,9 @@
 #ifndef UD_PAIR_H
 #define UD_PAIR_H
+#include <charconv>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 namespace user_defined {
 
@@ -13,24 +15,24 @@ public:
   pair(T a, T b) : std::pair<T, T>(a, b) {}
 
   friend std::ostream &operator<<(std::ostream &stream, const pair<T> &pair) {
-    stream << pair.first << "," << pair.second;
-    return stream;
+    return stream << pair.first << "," << pair.second;
   }
-  friend pair<T> operator+(const pair<T> &lhs, const pair<T> &pair1) {
+  friend pair<T> operator+(const pair<T> &lhs, const pair<T> &pair1) noexcept {
     return pair<T>({lhs.first + pair1.first, lhs.second + pair1.second});
   }
 
-  friend pair<T> operator+=(pair<T> &lhs, const pair<T> added_pair) {
+  friend pair<T> &operator+=(pair<T> &lhs, const pair<T> added_pair) noexcept {
     lhs.first += added_pair.first;
     lhs.second += added_pair.second;
     return lhs;
   }
 
-  friend pair<T> operator-(const pair<T> &lhs, const pair<T> &pair1) {
+  friend pair<T> operator-(const pair<T> &lhs, const pair<T> &pair1) noexcept {
     return pair<T>({lhs.first - pair1.first, lhs.second - pair1.second});
   }
 
-  friend pair<T> operator-=(pair<T> &lhs, const pair<T> subtracted_pair) {
+  friend pair<T> &operator-=(pair<T> &lhs,
+                             const pair<T> subtracted_pair) noexcept {
     lhs.first -= subtracted_pair.first;
     lhs.second -= subtracted_pair.second;
     return lhs;
@@ -46,42 +48,52 @@ public:
 };
 
 template <typename T> struct pair_hash {
-  int matrix_size; // Stores the matrix size
-
-  pair_hash(int size) : matrix_size(size) {}
-
-  std::size_t operator()(const pair<T> &p) const {
-    return p.first * matrix_size + p.second;
+  std::size_t operator()(const pair<T> &p) const noexcept {
+    std::size_t h1 = std::hash<T>{}(p.first);
+    std::size_t h2 = std::hash<T>{}(p.second);
+    return h1 ^ (h2 << 1);
   }
 };
 
-std::vector<std::string> split(std::string s, std::string delimiter) {
+std::vector<std::string> split(std::string_view s,
+                               const std::string_view &delimiter) noexcept {
   std::vector<std::string> v;
-  size_t pos = 0;
-  std::string token;
-  while ((pos = s.find(delimiter)) != std::string::npos) {
-    token = s.substr(0, pos);
+  size_t start = 0;
+  while (true) {
+    size_t end = s.find(delimiter, start);
+    std::string_view token = s.substr(start, end);
     if (!token.empty()) {
-      v.push_back(token);
+      v.emplace_back(token);
     }
-    s.erase(0, pos + delimiter.length());
+    if (end == std::string_view::npos) {
+      break;
+    }
+    start = end + delimiter.length();
   }
-  v.push_back(s);
   return v;
 };
 
-std::vector<int> split_int(std::string s, std::string delimiter) {
-  std::vector<int> v;
-  size_t pos = 0;
-  std::string token;
-  while ((pos = s.find(delimiter)) != std::string::npos) {
-    token = s.substr(0, pos);
+template <typename T>
+std::vector<T> split_int(std::string_view s,
+                         const std::string_view &delimiter) noexcept {
+  std::vector<T> v;
+  size_t start = 0;
+  while (true) {
+    size_t end = s.find(delimiter, start);
+    std::string_view token = s.substr(start, end);
     if (!token.empty()) {
-      v.push_back(std::stoi(token));
+      T value;
+      auto [ptr, ec] =
+          std::from_chars(token.data(), token.data() + token.size(), value);
+      if (ec == std::errc()) {
+        v.push_back(value);
+      }
     }
-    s.erase(0, pos + delimiter.length());
+    if (end == std::string_view::npos) {
+      break;
+    }
+    start = end + delimiter.length();
   }
-  v.push_back(std::stoi(s));
   return v;
 };
 } // namespace user_defined

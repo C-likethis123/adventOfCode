@@ -1,6 +1,5 @@
 #include "user_defined.h"
 #include <charconv>
-#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -8,19 +7,19 @@
 #include <vector>
 
 using namespace std;
-
-long concat(long a, long b) {
-  long pow10 = 10;
-  while (pow10 <= b)
-    pow10 *= 10;
-  return a * pow10 + b;
-}
-
 /**
-Previous `generate_outcomes` function created a bottleneck because
-it created a huge vector of 3^n possible outcomes.
-New approach does not store a huge vector -> from 24s to 0.02s
-*/
+Before optimization:
+real    0m1.283s
+user    0m0.998s
+sys     0m0.013s
+
+After optimizations:
+1038838357795
+
+real    0m0.517s
+user    0m0.349s
+sys     0m0.005s
+ */
 
 bool can_form_target(const vector<long> &nums, long target, size_t i,
                      long acc) {
@@ -37,10 +36,6 @@ bool can_form_target(const vector<long> &nums, long target, size_t i,
   if (can_form_target(nums, target, i + 1, acc * next))
     return true;
 
-  // Try '|'
-  if (can_form_target(nums, target, i + 1, concat(acc, next)))
-    return true;
-
   return false;
 }
 
@@ -55,9 +50,11 @@ int main(int argc, const char *argv[]) {
   // ofstream debug("output.txt");
   if (test_case.is_open()) {
     while (getline(test_case, line)) {
+      // parsing logic has no issues
       string_view curr_line = std::string_view(line);
       size_t start = 0;
       size_t end = curr_line.find(':', start);
+      // find first item
       long first;
       std::string_view token = curr_line.substr(start, end);
       {

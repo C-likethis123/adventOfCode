@@ -1,9 +1,9 @@
 #include "ud_matrix.h"
 #include "user_defined.h"
+#include <array>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 using namespace std;
@@ -11,44 +11,26 @@ using namespace std;
 /**
 to compile this: clang++ -I/(project root)/include solution.cpp && ./a.out
 input2.txt
+
+256
+
+real    0m0.228s
+user    0m0.003s
+sys     0m0.003s
  */
 
 using pr = user_defined::pair<int>;
 using matrix = user_defined::matrix<char>;
 
 matrix m;
-
 vector<pr> get_possible_locations(pr &p1, pr &p2) {
-  std::vector<pr> res;
   int horizontal_distance = p1.first - p2.first;
   int vertical_distance = p1.second - p2.second;
 
-  // in one distance
-  pr next_location({
-      p1.first + horizontal_distance,
-      p1.second + vertical_distance,
+  return vector<pr>({
+      {p1.first + horizontal_distance, p1.second + vertical_distance},
+      {p2.first - horizontal_distance, p2.second - vertical_distance},
   });
-  while (m.in_bounds(next_location)) {
-    res.emplace_back(next_location);
-    next_location = pr({
-        next_location.first + horizontal_distance,
-        next_location.second + vertical_distance,
-    });
-  }
-
-  // in another distance
-  next_location =
-      pr({p2.first - horizontal_distance, p2.second - vertical_distance});
-
-  while (m.in_bounds(next_location)) {
-    res.emplace_back(next_location);
-    next_location = pr({
-        next_location.first - horizontal_distance,
-        next_location.second - vertical_distance,
-    });
-  }
-
-  return res;
 }
 
 int main(int argc, const char *argv[]) {
@@ -84,15 +66,15 @@ int main(int argc, const char *argv[]) {
         for (size_t j = i + 1; j < group_antennas.size(); j++) {
           vector<pr> possible_locations =
               get_possible_locations(group_antennas[i], group_antennas[j]);
+          // debug << "antenna 1: " << group_antennas[i] << endl;
+          // debug << "antenna 2: " << group_antennas[j] << endl;
           for (auto &location : possible_locations) {
-            // debug << "location: " << location << endl;
-            antinodes.insert(location);
+            if (m.in_bounds(location)) {
+              // debug << "location: " << location << endl;
+              antinodes.insert(location);
+            }
           }
         }
-      }
-      // antennas are also antinodes, add them in
-      for (const auto &antenna : group_antennas) {
-        antinodes.insert(antenna);
       }
     }
 

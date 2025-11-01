@@ -11,6 +11,7 @@ DAY=$1
 FOLDER_NAME="Day $DAY"
 CPP_TEMPLATE='#include "user_defined.h"
 #include "ud_matrix.h"
+// #include <scn/scan.h>  // Uncomment to use scnlib for parsing
 #include <algorithm>
 #include <bitset>
 #include <climits>
@@ -43,6 +44,12 @@ int main(int argc, const char *argv[]) {
   ofstream debug("output.txt");
   if (test_case.is_open()) {
      getline(test_case, line);
+     
+     // Example scnlib usage (uncomment if using scnlib):
+     // int a, b;
+     // if (auto result = scn::scan(line, "{} {}", a, b)) {
+     //     cout << "Parsed: " << a << ", " << b << endl;
+     // }
   }
 
   cout << fixed << ans << endl;

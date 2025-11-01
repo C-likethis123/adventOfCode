@@ -21,7 +21,8 @@ modification needed: need to figure out the actual paths.
 note that there is more than one best path as well?
 if there is only one path, I can use a predecessor map.
 
-if there are multiple paths, I need multiple maps + account for common coordinates
+if there are multiple paths, I need multiple maps + account for common
+coordinates
 
  */
 using namespace std;
@@ -48,34 +49,38 @@ third item: distance
  */
 using Item = std::tuple<pr, pr, int>;
 
-const vector<const pr> directions({
+const vector<pr> directions({
     {1, 0},  // up
     {0, 1},  // right
     {-1, 0}, // down
     {0, -1}  // left
 });
 
+const vector<std::pair<pr, int>> down_neighbours({{pr({1, 0}), 1},
+                                                  {pr({0, 1}), 1001},
+                                                  {pr({-1, 0}), 2001},
+                                                  {pr({0, -1}), 1001}});
+std::vector<std::pair<pr, int>> right_neighbours({{pr({1, 0}), 1001},
+                                                  {pr({0, 1}), 1},
+                                                  {pr({-1, 0}), 1001},
+                                                  {pr({0, -1}), 2001}});
+std::vector<std::pair<pr, int>> left_neighbours({{pr({1, 0}), 2001},
+                                                 {pr({0, 1}), 1001},
+                                                 {pr({-1, 0}), 1},
+                                                 {pr({0, -1}), 1001}});
+std::vector<std::pair<pr, int>> up_neighbours({{pr({1, 0}), 1001},
+                                               {pr({0, 1}), 2001},
+                                               {pr({-1, 0}), 1001},
+                                               {pr({0, -1}), 1}});
 std::vector<std::pair<pr, int>> derive_neighbours(const pr &direction) {
   if (direction == pr({1, 0})) {
-    return std::vector<std::pair<pr, int>>({{pr({1, 0}), 1},
-                                            {pr({0, 1}), 1001},
-                                            {pr({-1, 0}), 2001},
-                                            {pr({0, -1}), 1001}});
+    return down_neighbours;
   } else if (direction == pr({0, 1})) {
-    return std::vector<std::pair<pr, int>>({{pr({1, 0}), 1001},
-                                            {pr({0, 1}), 1},
-                                            {pr({-1, 0}), 1001},
-                                            {pr({0, -1}), 2001}});
+    return right_neighbours;
   } else if (direction == pr({-1, 0})) {
-    return std::vector<std::pair<pr, int>>({{pr({1, 0}), 2001},
-                                            {pr({0, 1}), 1001},
-                                            {pr({-1, 0}), 1},
-                                            {pr({0, -1}), 1001}});
+    return left_neighbours;
   } else {
-    return std::vector<std::pair<pr, int>>({{pr({1, 0}), 1001},
-                                            {pr({0, 1}), 2001},
-                                            {pr({-1, 0}), 1001},
-                                            {pr({0, -1}), 1}});
+    return up_neighbours;
   }
 }
 
@@ -100,7 +105,7 @@ int main(int argc, const char *argv[]) {
 
     pr start = find_position(m, 'S');
     pr dest = find_position(m, 'E');
-    unordered_map<pr, int, pair_hash> dist(8, pair_hash(m.size()));
+    unordered_map<pr, int, pair_hash> dist(8, pair_hash{});
     auto cmp = [](Item &left, Item &right) {
       return std::get<2>(left) > std::get<2>(right);
     };
@@ -111,8 +116,8 @@ int main(int argc, const char *argv[]) {
       }
     }
     dist[start] = 0;
-    unordered_set<pr, pair_hash> encountered(8, pair_hash(m.size()));
-    unordered_map<pr, pr, pair_hash> prev(8, pair_hash(m.size()));
+    unordered_set<pr, pair_hash> encountered(8, pair_hash{});
+    unordered_map<pr, pr, pair_hash> prev(8, pair_hash{});
     // queue items need to be updated
     queue.push(std::tuple<pr, pr, int>({start, pr(0, 1), 0}));
 
@@ -138,8 +143,8 @@ int main(int argc, const char *argv[]) {
     }
     pr current = prev[dest];
     while (current != start) {
-        ans += 1;
-        current = prev[current];
+      ans += 1;
+      current = prev[current];
     }
   }
 

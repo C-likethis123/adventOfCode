@@ -38,30 +38,29 @@ bool in_bounds(vector<vector<char>> &matrix, int x, int y) {
 using pr = user_defined::pair<int>;
 using pair_hash = user_defined::pair_hash<int>;
 
-template <typename Hash>
+const pr UP({1, 0});
+const pr RIGHT({0, 1});
+const pr LEFT({0, -1});
+const pr DOWN({-1, 0});
+
+const std::vector<pr> directions({
+    UP,    // up
+    DOWN,  // down
+    RIGHT, // right
+    LEFT,  // left
+});
+const std::vector<std::vector<pr>> corners({
+    {UP, LEFT},   // top left
+    {UP, RIGHT},  // top right
+    {DOWN, LEFT}, // bottom left
+    {DOWN, RIGHT} // bottom right
+});
+
 long compute_cost(vector<vector<char>> &matrix,
-                  unordered_set<pr, Hash> &encountered, int i, int j) {
+                  unordered_set<pr, pair_hash> &encountered, int i, int j) {
   long area = 0;
   long perimeter = 0;
   std::vector<pr> queue({pr({i, j})});
-  const pr UP({1, 0});
-  const pr RIGHT({0, 1});
-  const pr LEFT({0, -1});
-  const pr DOWN({-1, 0});
-
-  const std::vector<pr> directions({
-      UP,    // up
-      DOWN,  // down
-      RIGHT, // right
-      LEFT,  // left
-  });
-
-  const std::vector<std::vector<pr>> corners({
-      {UP, LEFT},   // top left
-      {UP, RIGHT},  // top right
-      {DOWN, LEFT}, // bottom left
-      {DOWN, RIGHT} // bottom right
-  });
 
   while (!queue.empty()) {
     auto p = queue.front();
@@ -112,14 +111,9 @@ int main(int argc, const char *argv[]) {
   if (test_case.is_open()) {
     vector<vector<char>> matrix;
     while (getline(test_case, line)) {
-      vector<char> row;
-      for (char &c : line) {
-        row.emplace_back(c);
-      }
-      matrix.emplace_back(row);
+      matrix.emplace_back(line.begin(), line.end());
     }
-    unordered_set<pr, pair_hash> encountered(
-        8, pair_hash(matrix.size()));
+    unordered_set<pr, pair_hash> encountered(8, pair_hash{});
 
     for (int i = 0; i < matrix.size(); i++) {
       for (int j = 0; j < matrix[0].size(); j++) {
