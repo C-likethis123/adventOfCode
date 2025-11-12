@@ -47,14 +47,6 @@ public:
   }
 };
 
-template <typename T> struct pair_hash {
-  std::size_t operator()(const pair<T> &p) const noexcept {
-    std::size_t h1 = std::hash<T>{}(p.first);
-    std::size_t h2 = std::hash<T>{}(p.second);
-    return h1 ^ (h2 << 1);
-  }
-};
-
 std::vector<std::string> split(std::string_view s,
                                const std::string_view &delimiter) noexcept {
   std::vector<std::string> v;
@@ -97,5 +89,15 @@ std::vector<T> split_int(std::string_view s,
   return v;
 };
 } // namespace user_defined
+
+namespace std {
+template <typename T> struct hash<user_defined::pair<T>> {
+  size_t operator()(const user_defined::pair<T> &p) const noexcept {
+    size_t h1 = hash<T>{}(p.first);
+    size_t h2 = hash<T>{}(p.second);
+    return h1 ^ (h2 << 1);
+  }
+};
+} // namespace std
 
 #endif // UD_PAIR_H
