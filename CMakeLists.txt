@@ -48,3 +48,4 @@ endfunction()
 #     add_aoc_solution(2024 ${DAY} 2)
 # endforeach()
 
+

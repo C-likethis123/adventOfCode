@@ -23,7 +23,7 @@ YEAR_DIR="$SCRIPT_DIR/$YEAR"
 BUILD_DIR="$YEAR_DIR/build"
 DAY_DIR="$YEAR_DIR/Day $DAY"
 TARGET="day${DAY}_part${PART}"
-INPUT_FILE="$DAY_DIR/input.txt"
+INPUT_FILE="$DAY_DIR/input_test.txt"
 
 # Check if year directory exists
 if [ ! -d "$YEAR_DIR" ]; then
@@ -82,4 +82,5 @@ else
     echo "✗ Build failed!"
     exit 1
 fi
+
 
