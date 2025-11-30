@@ -70,3 +70,10 @@ target_link_libraries(day5 PRIVATE scn::scn)
 set_target_properties(day5 PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )
+
+# Add executable for Day 6
+add_executable(day6 6.cpp)
+target_link_libraries(day6 PRIVATE scn::scn)
+set_target_properties(day6 PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)

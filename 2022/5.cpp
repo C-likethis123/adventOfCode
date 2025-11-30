@@ -35,28 +35,25 @@ int main() {
     reverse(stack.begin(), stack.end());
   }
 
-  auto process_part_1 = [](int count, int from, int to,
-                           vector<vector<char>> &stacks) {
-    auto start = stacks[from].end() - count;
-    auto end = stacks[from].end();
-    stacks[to].insert(stacks[to].end(), reverse_iterator(end),
-                      reverse_iterator(start));
-    stacks[from].erase(start, end);
+  auto process_part_1 = [](int count, vector<char> &from, vector<char> &to) {
+    auto start = from.end() - count;
+    auto end = from.end();
+    to.insert(to.end(), from.rbegin(), from.rbegin() + count);
+    from.erase(start, end);
   };
 
-  auto process_part_2 = [](int count, int from, int to,
-                           vector<vector<char>> &stacks) {
-    auto start = stacks[from].end() - count;
-    auto end = stacks[from].end();
-    stacks[to].insert(stacks[to].end(), start, end);
-    stacks[from].erase(start, end);
+  auto process_part_2 = [](int count, vector<char> &from, vector<char> &to) {
+    auto start = from.end() - count;
+    auto end = from.end();
+    to.insert(to.end(), start, end);
+    from.erase(start, end);
   };
 
   while (getline(test_case, line)) {
     if (auto result = scn::scan<int, int, int>(line, "move {} from {} to {}")) {
       auto [count, from, to] = result->values();
-      process_part_1(count, from - 1, to - 1, stacks_part_1);
-      process_part_2(count, from - 1, to - 1, stacks_part_2);
+      process_part_1(count, stacks_part_1[from - 1], stacks_part_1[to - 1]);
+      process_part_2(count, stacks_part_2[from - 1], stacks_part_2[to - 1]);
     }
   }
 
