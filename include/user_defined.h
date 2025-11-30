@@ -11,8 +11,8 @@ namespace user_defined {
 template <typename T> class pair : public std::pair<T, T> {
 public:
   // default constructor so I can use it in an unordered_map
-  pair() : std::pair<T, T>(T{}, T{}) {}
-  pair(T a, T b) : std::pair<T, T>(a, b) {}
+  constexpr pair() : std::pair<T, T>(T{}, T{}) {}
+  constexpr pair(T a, T b) : std::pair<T, T>(a, b) {}
 
   friend std::ostream &operator<<(std::ostream &stream, const pair<T> &pair) {
     return stream << pair.first << "," << pair.second;
