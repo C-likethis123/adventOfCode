@@ -1,30 +1,48 @@
+#include <bitset>
 #include <fstream>
 #include <iostream>
-#include <unordered_set>
 
 using namespace std;
 
-int get_priority(char c) { return (c >= 'a') ? (c - 'a' + 1) : (c - 'A' + 27); }
+int get_priority(char c) { return (c >= 'a') ? c - 'a' : c - 'A' + 26; }
 
-long compute_priority(string &line) {
-  long part1 = 0;
-  unordered_set<char> first_half;
-  for (size_t i = 0; i < line.length() / 2; i++) {
-    first_half.insert(line[i]);
+/**
+52 bytes is sufficient, but changed it to 64 to align with the cache lines.
+*/
+bitset<64> make_bitset_from_line(const string &line,
+                                 std::string::const_iterator start,
+                                 std::string::const_iterator end) {
+  bitset<64> bitset;
+  for (auto it = start; it != end; it++) {
+    bitset.set(get_priority(*it));
   }
-  unordered_set<char> common_items;
-  for (size_t i = line.length() / 2; i < line.length(); i++) {
-    if (first_half.count(line[i])) {
-      common_items.insert(line[i]);
+  return bitset;
+}
+
+long compute_priority(const string &line) {
+  bitset<64> first_half = make_bitset_from_line(
+      line, line.begin(), line.begin() + line.length() / 2);
+  bitset<64> second_half =
+      make_bitset_from_line(line, line.begin() + line.length() / 2, line.end());
+  bitset<64> common_items = first_half & second_half;
+  for (size_t i = 0; i < 64; i++) {
+    if (common_items.test(i)) {
+      return i + 1;
     }
   }
-  for (char c : common_items) {
-    part1 += get_priority(c);
+}
+
+long compute_priority_for_group(vector<bitset<64>> &group) {
+  bitset<64> common_items = group[0] & group[1] & group[2];
+  for (size_t i = 0; i < 64; i++) {
+    if (common_items.test(i)) {
+      return i + 1;
+    }
   }
-  return part1;
 }
 
 int main() {
+  constexpr int GROUP_SIZE = 3;
   ifstream test_case("input_3.txt");
   if (!test_case.is_open()) {
     cerr << "Error: Cannot open input_3.txt" << endl;
@@ -34,31 +52,14 @@ int main() {
   string line;
   long part1 = 0;
   long part2 = 0;
-  std::vector<string> group;
+  std::vector<bitset<64>> group;
+  group.reserve(GROUP_SIZE);
   while (getline(test_case, line)) {
     part1 += compute_priority(line);
 
-    // group into 3 lines
-    // find common item for all 3 lines - this is the badge
-    group.push_back(line);
-    if (group.size() == 3) {
-      unordered_map<char, int> frequencies;
-      for (string &rucksack : group) {
-        unordered_set<char> seen;
-        for (char c : rucksack) {
-          if (seen.count(c) == 0) {
-            seen.insert(c);
-            frequencies[c]++;
-          }
-        }
-      }
-      for (auto &[c, freq] : frequencies) {
-        if (freq == 3) {
-          //   std::cout << "Badge: " << c << endl;
-          part2 += get_priority(c);
-          break;
-        }
-      }
+    group.push_back(make_bitset_from_line(line, line.begin(), line.end()));
+    if (group.size() == GROUP_SIZE) {
+      part2 += compute_priority_for_group(group);
       group.clear();
     }
   }
